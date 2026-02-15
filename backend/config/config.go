@@ -2,9 +2,17 @@ package config
 
 import (
 	"log"
+	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
+
+type Application struct {
+	Config *Config
+	Server *http.Server
+	Router *gin.Engine
+}
 
 type Config struct {
 	AppPort string `mapstructure:"APP_PORT"`
