@@ -105,7 +105,7 @@ const Register = () => {
     const passwordStrength = getPasswordStrength(formData.password);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-100 flex items-center justify-center p-6">
+        <div className="min-h-screen bg-surface-variant flex items-center justify-center p-6">
             <div className="w-full max-w-md">
                 {/* Logo/Header */}
                 <div className="text-center mb-8">
@@ -162,8 +162,8 @@ const Register = () => {
                                             <div
                                                 key={level}
                                                 className={`h-1 flex-1 rounded ${level <= passwordStrength.strength
-                                                        ? passwordStrength.color
-                                                        : 'bg-gray-200'
+                                                    ? passwordStrength.color
+                                                    : 'bg-gray-200'
                                                     }`}
                                             />
                                         ))}

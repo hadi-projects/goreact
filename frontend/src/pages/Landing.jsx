@@ -3,7 +3,7 @@ import Button from '../components/Button';
 
 const Landing = () => {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-500 via-primary-400 to-secondary-200">
+        <div className="min-h-screen bg-primary-500">
             {/* Navigation */}
             <nav className="container mx-auto px-6 py-6">
                 <div className="flex justify-between items-center">

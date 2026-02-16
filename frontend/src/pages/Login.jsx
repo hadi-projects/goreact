@@ -20,14 +20,15 @@ const Login = () => {
             return response.data;
         },
         onSuccess: (data) => {
-            // Save token to localStorage
-            localStorage.setItem('token', data.data.token);
+            // Save access token to localStorage
+            localStorage.setItem('token', data.data.access_token);
+            localStorage.setItem('user', JSON.stringify(data.data.user));
             // Redirect to dashboard or home
             navigate('/dashboard');
         },
         onError: (error) => {
             setErrors({
-                submit: error.response?.data?.meta?.message || 'Login failed. Please try again.',
+                submit: error.response?.data?.meta?.message || 'Invalid email or password',
             });
         },
     });
@@ -63,7 +64,7 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-100 flex items-center justify-center p-6">
+        <div className="min-h-screen bg-surface-variant flex items-center justify-center p-6">
             <div className="w-full max-w-md">
                 {/* Logo/Header */}
                 <div className="text-center mb-8">
