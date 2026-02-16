@@ -1,104 +1,152 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Button from '../components/Button';
 import Card from '../components/Card';
 
 const Dashboard = () => {
-    const navigate = useNavigate();
-    const [user, setUser] = useState(null);
-
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
-
-        if (!token) {
-            navigate('/login');
-            return;
+    // Dummy statistics data
+    const stats = [
+        {
+            id: 1,
+            title: 'Total Users',
+            value: '254',
+            change: '+12%',
+            trend: 'up',
+            icon: (
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            ),
+            color: 'bg-blue-500'
+        },
+        {
+            id: 2,
+            title: 'Total Roles',
+            value: '8',
+            change: '+2',
+            trend: 'up',
+            icon: (
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            ),
+            color: 'bg-green-500'
+        },
+        {
+            id: 3,
+            title: 'Permissions',
+            value: '42',
+            change: '+5',
+            trend: 'up',
+            icon: (
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+            ),
+            color: 'bg-purple-500'
+        },
+        {
+            id: 4,
+            title: 'Active Sessions',
+            value: '89',
+            change: '-3%',
+            trend: 'down',
+            icon: (
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            ),
+            color: 'bg-orange-500'
         }
+    ];
 
-        if (userData) {
-            setUser(JSON.parse(userData));
-        }
-    }, [navigate]);
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login');
-    };
-
-    if (!user) {
-        return (
-            <div className="min-h-screen bg-surface flex items-center justify-center">
-                <div className="text-primary-500">Loading...</div>
-            </div>
-        );
-    }
+    const recentActivities = [
+        { id: 1, action: 'User john@example.com registered', time: '2 minutes ago' },
+        { id: 2, action: 'Role "Manager" created', time: '15 minutes ago' },
+        { id: 3, action: 'Permission "edit-user" updated', time: '1 hour ago' },
+        { id: 4, action: 'User jane@example.com logged in', time: '2 hours ago' },
+        { id: 5, action: 'System backup completed', time: '3 hours ago' }
+    ];
 
     return (
-        <div className="min-h-screen bg-surface">
-            {/* Navigation */}
-            <nav className="bg-white shadow-md3-1">
-                <div className="container mx-auto px-6 py-4">
-                    <div className="flex justify-between items-center">
-                        <h1 className="text-2xl font-bold text-primary-500">Go Starter</h1>
-                        <div className="flex items-center gap-4">
-                            <span className="text-gray-700">Welcome, {user.name}</span>
-                            <Button variant="outline" onClick={handleLogout}>
-                                Logout
-                            </Button>
+        <div>
+            {/* Page Header */}
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-gray-600 mt-2">Welcome back! Here's what's happening today.</p>
+            </div>
+
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {stats.map((stat) => (
+                    <Card key={stat.id}>
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
+                                <h3 className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</h3>
+                                <div className="flex items-center gap-1">
+                                    <span className={`text-sm font-medium ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                                        }`}>
+                                        {stat.change}
+                                    </span>
+                                    <span className="text-xs text-gray-500">from last month</span>
+                                </div>
+                            </div>
+                            <div className={`${stat.color} p-3 rounded-xl text-white`}>
+                                {stat.icon}
+                            </div>
                         </div>
+                    </Card>
+                ))}
+            </div>
+
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Recent Activity */}
+                <Card className="lg:col-span-2">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+                    <div className="space-y-4">
+                        {recentActivities.map((activity) => (
+                            <div key={activity.id} className="flex items-start gap-3 pb-4 border-b border-gray-100 last:border-0">
+                                <div className="w-2 h-2 bg-primary-500 rounded-full mt-2"></div>
+                                <div className="flex-1">
+                                    <p className="text-gray-900">{activity.action}</p>
+                                    <p className="text-sm text-gray-500 mt-1">{activity.time}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                </div>
-            </nav>
+                </Card>
 
-            {/* Main Content */}
-            <div className="container mx-auto px-6 py-12">
-                <div className="max-w-4xl mx-auto">
-                    <h2 className="text-4xl font-bold text-gray-900 mb-8">Dashboard</h2>
-
-                    {/* User Info Card */}
-                    <Card className="mb-8">
-                        <h3 className="text-2xl font-semibold text-gray-900 mb-4">User Information</h3>
-                        <div className="space-y-3">
-                            <div className="flex">
-                                <span className="font-medium text-gray-600 w-32">Name:</span>
-                                <span className="text-gray-900">{user.name}</span>
-                            </div>
-                            <div className="flex">
-                                <span className="font-medium text-gray-600 w-32">Email:</span>
-                                <span className="text-gray-900">{user.email}</span>
-                            </div>
-                            <div className="flex">
-                                <span className="font-medium text-gray-600 w-32">Role ID:</span>
-                                <span className="text-gray-900">{user.role_id}</span>
-                            </div>
-                        </div>
-                    </Card>
-
-                    {/* Quick Actions */}
-                    <Card>
-                        <h3 className="text-2xl font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                        <div className="grid md:grid-cols-3 gap-4">
-                            <Link to="/admin/users">
-                                <Button fullWidth>Manage Users</Button>
-                            </Link>
-                            <Link to="/admin/roles">
-                                <Button variant="secondary" fullWidth>Manage Roles</Button>
-                            </Link>
-                            <Link to="/admin/permissions">
-                                <Button variant="outline" fullWidth>Manage Permissions</Button>
-                            </Link>
-                        </div>
-                    </Card>
-
-                    {/* Back to Home */}
-                    <div className="mt-8 text-center">
-                        <Link to="/" className="text-primary-500 hover:text-primary-600">
-                            ← Back to Home
+                {/* Quick Actions */}
+                <Card>
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+                    <div className="space-y-3">
+                        <Link to="/admin/users">
+                            <Button fullWidth className="justify-start">
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                Manage Users
+                            </Button>
+                        </Link>
+                        <Link to="/admin/roles">
+                            <Button variant="secondary" fullWidth className="justify-start">
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                Manage Roles
+                            </Button>
+                        </Link>
+                        <Link to="/admin/permissions">
+                            <Button variant="outline" fullWidth className="justify-start">
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                </svg>
+                                Manage Permissions
+                            </Button>
                         </Link>
                     </div>
-                </div>
+                </Card>
             </div>
         </div>
     );

@@ -14,13 +14,14 @@ function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/dashboard" element={<Dashboard />} />
 
-      {/* Admin Routes */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route path="users" element={<Users />} />
-        <Route path="roles" element={<Roles />} />
-        <Route path="permissions" element={<Permissions />} />
+      {/* Admin Routes with Sidebar */}
+      <Route path="/" element={<AdminLayout />}>
+        <Route path="dashboard" element={<Dashboard />} />
+
+        <Route path="admin/users" element={<Users />} />
+        <Route path="admin/roles" element={<Roles />} />
+        <Route path="admin/permissions" element={<Permissions />} />
       </Route>
     </Routes>
   )

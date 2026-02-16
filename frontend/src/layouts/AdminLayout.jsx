@@ -36,18 +36,18 @@ const AdminLayout = () => {
     }
 
     return (
-        <div className="flex min-h-screen bg-surface">
+        <div className="flex min-h-screen bg-gray-50">
             {/* Sidebar */}
-            <Sidebar userName={user.name} />
+            <Sidebar />
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col">
                 {/* Header */}
-                <header className="bg-white shadow-md3-1 px-8 py-4">
+                <header className="bg-white border-b border-outline-variant px-6 py-3">
                     <div className="flex justify-between items-center">
-                        <h2 className="text-2xl font-semibold text-gray-900">Administration</h2>
-                        <div className="flex items-center gap-4">
-                            <span className="text-gray-600">Welcome, {user.name}</span>
+                        <h2 className="text-lg font-semibold text-gray-900">Administration</h2>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm text-gray-600">{user.email}</span>
                             <Button variant="outline" onClick={handleLogout}>
                                 Logout
                             </Button>
@@ -56,7 +56,7 @@ const AdminLayout = () => {
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 p-8">
+                <main className="flex-1 p-6">
                     <Outlet />
                 </main>
             </div>
