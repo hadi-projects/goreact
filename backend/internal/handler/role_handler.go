@@ -8,6 +8,7 @@ import (
 	"github.com/hadi-projects/go-react-starter/internal/dto"
 	"github.com/hadi-projects/go-react-starter/internal/service"
 	"github.com/hadi-projects/go-react-starter/pkg/logger"
+	"github.com/hadi-projects/go-react-starter/pkg/response"
 )
 
 type RoleHandler interface {
@@ -30,28 +31,44 @@ func (h *roleHandler) Create(c *gin.Context) {
 	var req dto.CreateRoleRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("Create role failed: invalid request body")
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	res, err := h.service.Create(req)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("Create role failed: service error")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"data": res})
+	response.Success(c, http.StatusCreated, "Role created successfully", res)
 }
 
 func (h *roleHandler) GetAll(c *gin.Context) {
-	res, err := h.service.GetAll()
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	pagination := &dto.PaginationRequest{
+		Page:  page,
+		Limit: limit,
+	}
+
+	res, err := h.service.GetAll(pagination)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("GetAll roles failed")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": res})
+
+	meta := &response.PaginationMeta{
+		CurrentPage: res.Meta.CurrentPage,
+		TotalPages:  res.Meta.TotalPages,
+		TotalItems:  res.Meta.TotalItems,
+		Limit:       res.Meta.Limit,
+	}
+
+	response.SuccessWithPagination(c, http.StatusOK, "Roles retrieved successfully", res.Data, meta)
 }
 
 func (h *roleHandler) GetByID(c *gin.Context) {
@@ -59,17 +76,17 @@ func (h *roleHandler) GetByID(c *gin.Context) {
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Str("id", idStr).Msg("GetRoleByID failed: invalid ID")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		response.Error(c, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
 	res, err := h.service.GetByID(uint(id))
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Uint("id", uint(id)).Msg("GetRoleByID failed: not found")
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": res})
+	response.Success(c, http.StatusOK, "Role retrieved successfully", res)
 }
 
 func (h *roleHandler) Update(c *gin.Context) {
@@ -77,24 +94,24 @@ func (h *roleHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Str("id", idStr).Msg("Update role failed: invalid ID")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		response.Error(c, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
 	var req dto.UpdateRoleRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("Update role failed: invalid request body")
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	res, err := h.service.Update(uint(id), req)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Uint("id", uint(id)).Msg("Update role failed: service error")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": res})
+	response.Success(c, http.StatusOK, "Role updated successfully", res)
 }
 
 func (h *roleHandler) Delete(c *gin.Context) {
@@ -102,14 +119,14 @@ func (h *roleHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Str("id", idStr).Msg("Delete role failed: invalid ID")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		response.Error(c, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
 	if err := h.service.Delete(uint(id)); err != nil {
 		logger.SystemLogger.Error().Err(err).Uint("id", uint(id)).Msg("Delete role failed: service error")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Role deleted successfully"})
+	response.Success(c, http.StatusOK, "Role deleted successfully", nil)
 }

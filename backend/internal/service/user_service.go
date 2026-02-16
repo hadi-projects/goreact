@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"math"
 
 	"github.com/hadi-projects/go-react-starter/config"
 	"github.com/hadi-projects/go-react-starter/internal/dto"
@@ -13,7 +14,7 @@ import (
 type UserService interface {
 	Register(req dto.RegisterRequest) (*dto.UserResponse, error)
 	GetMe(userID uint) (*dto.UserResponse, error)
-	GetAll() ([]dto.UserResponse, error)
+	GetAll(pagination *dto.PaginationRequest) (*dto.PaginationResponse, error)
 	Update(id uint, req dto.UpdateUserRequest) (*dto.UserResponse, error)
 	Delete(id uint) error
 }
@@ -85,8 +86,8 @@ func (s *userService) GetMe(userID uint) (*dto.UserResponse, error) {
 	}, nil
 }
 
-func (s *userService) GetAll() ([]dto.UserResponse, error) {
-	users, err := s.userRepo.FindAll()
+func (s *userService) GetAll(pagination *dto.PaginationRequest) (*dto.PaginationResponse, error) {
+	users, total, err := s.userRepo.FindAll(pagination)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +103,16 @@ func (s *userService) GetAll() ([]dto.UserResponse, error) {
 			UpdatedAt: user.UpdatedAt,
 		})
 	}
-	return userResponses, nil
+
+	return &dto.PaginationResponse{
+		Data: userResponses,
+		Meta: dto.PaginationMeta{
+			CurrentPage: pagination.GetPage(),
+			TotalPages:  int(math.Ceil(float64(total) / float64(pagination.GetLimit()))),
+			TotalItems:  total,
+			Limit:       pagination.GetLimit(),
+		},
+	}, nil
 }
 
 func (s *userService) Update(id uint, req dto.UpdateUserRequest) (*dto.UserResponse, error) {

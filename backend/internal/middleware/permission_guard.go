@@ -4,20 +4,21 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hadi-projects/go-react-starter/pkg/response"
 )
 
 func PermissionGuard(requiredPermission string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		permissionsInterface, exists := c.Get("permissions")
 		if !exists {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Permissions not found in context"})
+			response.Error(c, http.StatusForbidden, "Permissions not found in context")
 			c.Abort()
 			return
 		}
 
 		permissions, ok := permissionsInterface.([]string)
 		if !ok {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Invalid permissions format"})
+			response.Error(c, http.StatusForbidden, "Invalid permissions format")
 			c.Abort()
 			return
 		}
@@ -29,7 +30,7 @@ func PermissionGuard(requiredPermission string) gin.HandlerFunc {
 			}
 		}
 
-		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden: Insufficient permissions"})
+		response.Error(c, http.StatusForbidden, "Forbidden: Insufficient permissions")
 		c.Abort()
 	}
 }

@@ -1,13 +1,14 @@
 package repository
 
 import (
+	"github.com/hadi-projects/go-react-starter/internal/dto"
 	"github.com/hadi-projects/go-react-starter/internal/entity"
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
 	Create(user *entity.User) error
-	FindAll() ([]entity.User, error)
+	FindAll(pagination *dto.PaginationRequest) ([]entity.User, int64, error)
 	FindByID(id uint) (*entity.User, error)
 	FindByEmail(email string) (*entity.User, error)
 	FindRoleByName(name string) (*entity.Role, error)
@@ -27,10 +28,21 @@ func (r *userRepository) Create(user *entity.User) error {
 	return r.db.Create(user).Error
 }
 
-func (r *userRepository) FindAll() ([]entity.User, error) {
+func (r *userRepository) FindAll(pagination *dto.PaginationRequest) ([]entity.User, int64, error) {
 	var users []entity.User
-	err := r.db.Find(&users).Error
-	return users, err
+	var total int64
+
+	if err := r.db.Model(&entity.User{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (pagination.GetPage() - 1) * pagination.GetLimit()
+	err := r.db.Preload("Role").
+		Limit(pagination.GetLimit()).
+		Offset(offset).
+		Find(&users).Error
+
+	return users, total, err
 }
 
 func (r *userRepository) FindByID(id uint) (*entity.User, error) {

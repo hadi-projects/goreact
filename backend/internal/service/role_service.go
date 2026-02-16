@@ -1,6 +1,8 @@
 package service
 
 import (
+	"math"
+
 	"github.com/hadi-projects/go-react-starter/internal/dto"
 	"github.com/hadi-projects/go-react-starter/internal/entity"
 	"github.com/hadi-projects/go-react-starter/internal/repository"
@@ -8,7 +10,7 @@ import (
 
 type RoleService interface {
 	Create(req dto.CreateRoleRequest) (*dto.RoleResponse, error)
-	GetAll() ([]dto.RoleResponse, error)
+	GetAll(pagination *dto.PaginationRequest) (*dto.PaginationResponse, error)
 	GetByID(id uint) (*dto.RoleResponse, error)
 	Update(id uint, req dto.UpdateRoleRequest) (*dto.RoleResponse, error)
 	Delete(id uint) error
@@ -41,8 +43,8 @@ func (s *roleService) Create(req dto.CreateRoleRequest) (*dto.RoleResponse, erro
 	return s.mapToResponse(createdRole), nil
 }
 
-func (s *roleService) GetAll() ([]dto.RoleResponse, error) {
-	roles, err := s.roleRepo.FindAll()
+func (s *roleService) GetAll(pagination *dto.PaginationRequest) (*dto.PaginationResponse, error) {
+	roles, total, err := s.roleRepo.FindAll(pagination)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +53,16 @@ func (s *roleService) GetAll() ([]dto.RoleResponse, error) {
 	for _, role := range roles {
 		responses = append(responses, *s.mapToResponse(&role))
 	}
-	return responses, nil
+
+	return &dto.PaginationResponse{
+		Data: responses,
+		Meta: dto.PaginationMeta{
+			CurrentPage: pagination.GetPage(),
+			TotalPages:  int(math.Ceil(float64(total) / float64(pagination.GetLimit()))),
+			TotalItems:  total,
+			Limit:       pagination.GetLimit(),
+		},
+	}, nil
 }
 
 func (s *roleService) GetByID(id uint) (*dto.RoleResponse, error) {

@@ -1,13 +1,14 @@
 package repository
 
 import (
+	"github.com/hadi-projects/go-react-starter/internal/dto"
 	"github.com/hadi-projects/go-react-starter/internal/entity"
 	"gorm.io/gorm"
 )
 
 type RoleRepository interface {
 	Create(role *entity.Role, permissionIDs []uint) error
-	FindAll() ([]entity.Role, error)
+	FindAll(pagination *dto.PaginationRequest) ([]entity.Role, int64, error)
 	FindByID(id uint) (*entity.Role, error)
 	FindByName(name string) (*entity.Role, error)
 	Update(role *entity.Role, permissionIDs []uint) error
@@ -41,10 +42,21 @@ func (r *roleRepository) Create(role *entity.Role, permissionIDs []uint) error {
 	})
 }
 
-func (r *roleRepository) FindAll() ([]entity.Role, error) {
+func (r *roleRepository) FindAll(pagination *dto.PaginationRequest) ([]entity.Role, int64, error) {
 	var roles []entity.Role
-	err := r.db.Preload("Permissions").Find(&roles).Error
-	return roles, err
+	var total int64
+
+	if err := r.db.Model(&entity.Role{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (pagination.GetPage() - 1) * pagination.GetLimit()
+	err := r.db.Preload("Permissions").
+		Limit(pagination.GetLimit()).
+		Offset(offset).
+		Find(&roles).Error
+
+	return roles, total, err
 }
 
 func (r *roleRepository) FindByID(id uint) (*entity.Role, error) {

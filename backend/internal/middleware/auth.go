@@ -7,20 +7,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/hadi-projects/go-react-starter/pkg/response"
 )
 
 func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
+			response.Error(c, http.StatusUnauthorized, "Authorization header is required")
 			c.Abort()
 			return
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
+			response.Error(c, http.StatusUnauthorized, "Invalid authorization header format")
 			c.Abort()
 			return
 		}
@@ -35,7 +36,7 @@ func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			response.Error(c, http.StatusUnauthorized, "Invalid or expired token")
 			c.Abort()
 			return
 		}
@@ -57,7 +58,7 @@ func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 				c.Set("permissions", perms)
 			}
 		} else {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
+			response.Error(c, http.StatusUnauthorized, "Invalid token claims")
 			c.Abort()
 			return
 		}

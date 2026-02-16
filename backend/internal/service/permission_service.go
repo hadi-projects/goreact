@@ -1,6 +1,8 @@
 package service
 
 import (
+	"math"
+
 	"github.com/hadi-projects/go-react-starter/internal/dto"
 	"github.com/hadi-projects/go-react-starter/internal/entity"
 	"github.com/hadi-projects/go-react-starter/internal/repository"
@@ -8,7 +10,7 @@ import (
 
 type PermissionService interface {
 	Create(req dto.CreatePermissionRequest) (*dto.PermissionResponse, error)
-	GetAll() ([]dto.PermissionResponse, error)
+	GetAll(pagination *dto.PaginationRequest) (*dto.PaginationResponse, error)
 	Update(id uint, req dto.UpdatePermissionRequest) (*dto.PermissionResponse, error)
 	Delete(id uint) error
 }
@@ -38,23 +40,31 @@ func (s *permissionService) Create(req dto.CreatePermissionRequest) (*dto.Permis
 	}, nil
 }
 
-func (s *permissionService) GetAll() ([]dto.PermissionResponse, error) {
-	permissions, err := s.repo.FindAll()
+func (s *permissionService) GetAll(pagination *dto.PaginationRequest) (*dto.PaginationResponse, error) {
+	permissions, total, err := s.repo.FindAll(pagination)
 	if err != nil {
 		return nil, err
 	}
 
-	var response []dto.PermissionResponse
-	for _, p := range permissions {
-		response = append(response, dto.PermissionResponse{
-			ID:        p.ID,
-			Name:      p.Name,
-			CreatedAt: p.CreatedAt,
-			UpdatedAt: p.UpdatedAt,
+	var responses []dto.PermissionResponse
+	for _, perm := range permissions {
+		responses = append(responses, dto.PermissionResponse{
+			ID:        perm.ID,
+			Name:      perm.Name,
+			CreatedAt: perm.CreatedAt,
+			UpdatedAt: perm.UpdatedAt,
 		})
 	}
 
-	return response, nil
+	return &dto.PaginationResponse{
+		Data: responses,
+		Meta: dto.PaginationMeta{
+			CurrentPage: pagination.GetPage(),
+			TotalPages:  int(math.Ceil(float64(total) / float64(pagination.GetLimit()))),
+			TotalItems:  total,
+			Limit:       pagination.GetLimit(),
+		},
+	}, nil
 }
 
 func (s *permissionService) Update(id uint, req dto.UpdatePermissionRequest) (*dto.PermissionResponse, error) {

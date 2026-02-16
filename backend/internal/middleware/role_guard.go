@@ -4,20 +4,21 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hadi-projects/go-react-starter/pkg/response"
 )
 
 func RoleGuard(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userRole, exists := c.Get("role")
 		if !exists {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Role not found in context"})
+			response.Error(c, http.StatusForbidden, "Role not found in context")
 			c.Abort()
 			return
 		}
 
 		roleStr, ok := userRole.(string)
 		if !ok {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Invalid role format"})
+			response.Error(c, http.StatusForbidden, "Invalid role format")
 			c.Abort()
 			return
 		}
@@ -29,7 +30,7 @@ func RoleGuard(allowedRoles ...string) gin.HandlerFunc {
 			}
 		}
 
-		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden: Insufficient permissions"})
+		response.Error(c, http.StatusForbidden, "Forbidden: Insufficient permissions")
 		c.Abort()
 	}
 }

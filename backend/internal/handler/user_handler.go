@@ -8,6 +8,7 @@ import (
 	"github.com/hadi-projects/go-react-starter/internal/dto"
 	"github.com/hadi-projects/go-react-starter/internal/service"
 	"github.com/hadi-projects/go-react-starter/pkg/logger"
+	"github.com/hadi-projects/go-react-starter/pkg/response"
 )
 
 type UserHandler interface {
@@ -30,57 +31,69 @@ func (h *userHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("Register failed: invalid request body")
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	res, err := h.service.Register(req)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("Register failed: service error")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"data": res,
-	})
+	response.Success(c, http.StatusCreated, "User registered successfully", res)
 }
 
 func (h *userHandler) Me(c *gin.Context) {
 	val, exists := c.Get("user_id")
 	if !exists {
 		logger.SystemLogger.Error().Msg("Me failed: user_id not found in context")
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		response.Error(c, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	userID, ok := val.(uint)
 	if !ok {
 		logger.SystemLogger.Error().Msg("Me failed: invalid user_id type")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user ID type"})
+		response.Error(c, http.StatusInternalServerError, "Invalid user ID type")
 		return
 	}
 
 	res, err := h.service.GetMe(userID)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Uint("user_id", userID).Msg("Me failed: user not found")
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		response.Error(c, http.StatusNotFound, "User not found")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": res,
-	})
+	response.Success(c, http.StatusOK, "User profile retrieved successfully", res)
 }
 
 func (h *userHandler) GetAll(c *gin.Context) {
-	users, err := h.service.GetAll()
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	pagination := &dto.PaginationRequest{
+		Page:  page,
+		Limit: limit,
+	}
+
+	res, err := h.service.GetAll(pagination)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("GetAll users failed")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": users})
+
+	meta := &response.PaginationMeta{
+		CurrentPage: res.Meta.CurrentPage,
+		TotalPages:  res.Meta.TotalPages,
+		TotalItems:  res.Meta.TotalItems,
+		Limit:       res.Meta.Limit,
+	}
+
+	response.SuccessWithPagination(c, http.StatusOK, "Users retrieved successfully", res.Data, meta)
 }
 
 func (h *userHandler) Update(c *gin.Context) {
@@ -88,24 +101,24 @@ func (h *userHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Str("id", idStr).Msg("Update user failed: invalid ID")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		response.Error(c, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
 	var req dto.UpdateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("Update user failed: invalid request body")
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	res, err := h.service.Update(uint(id), req)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Uint("id", uint(id)).Msg("Update user failed: service error")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": res})
+	response.Success(c, http.StatusOK, "User updated successfully", res)
 }
 
 func (h *userHandler) Delete(c *gin.Context) {
@@ -113,14 +126,14 @@ func (h *userHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Str("id", idStr).Msg("Delete user failed: invalid ID")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		response.Error(c, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
 	if err := h.service.Delete(uint(id)); err != nil {
 		logger.SystemLogger.Error().Err(err).Uint("id", uint(id)).Msg("Delete user failed: service error")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+	response.Success(c, http.StatusOK, "User deleted successfully", nil)
 }

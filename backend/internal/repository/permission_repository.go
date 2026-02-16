@@ -1,13 +1,14 @@
 package repository
 
 import (
+	"github.com/hadi-projects/go-react-starter/internal/dto"
 	"github.com/hadi-projects/go-react-starter/internal/entity"
 	"gorm.io/gorm"
 )
 
 type PermissionRepository interface {
 	Create(permission *entity.Permission) error
-	FindAll() ([]entity.Permission, error)
+	FindAll(pagination *dto.PaginationRequest) ([]entity.Permission, int64, error)
 	FindByID(id uint) (*entity.Permission, error)
 	Update(permission *entity.Permission) error
 	Delete(id uint) error
@@ -25,10 +26,20 @@ func (r *permissionRepository) Create(permission *entity.Permission) error {
 	return r.db.Create(permission).Error
 }
 
-func (r *permissionRepository) FindAll() ([]entity.Permission, error) {
+func (r *permissionRepository) FindAll(pagination *dto.PaginationRequest) ([]entity.Permission, int64, error) {
 	var permissions []entity.Permission
-	err := r.db.Find(&permissions).Error
-	return permissions, err
+	var total int64
+
+	if err := r.db.Model(&entity.Permission{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (pagination.GetPage() - 1) * pagination.GetLimit()
+	err := r.db.Limit(pagination.GetLimit()).
+		Offset(offset).
+		Find(&permissions).Error
+
+	return permissions, total, err
 }
 
 func (r *permissionRepository) FindByID(id uint) (*entity.Permission, error) {
