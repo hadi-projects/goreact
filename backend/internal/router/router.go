@@ -47,7 +47,7 @@ func (r *Router) SetupRouter() *gin.Engine {
 	router.Use(middleware.CORSMiddleware(r.config))
 	router.Use(middleware.RequestLogger())
 	router.Use(middleware.RequestCancellation(time.Duration(r.config.Security.RequestTimeOut) * time.Second))
-	router.Use(middleware.APIKeyMiddleware(r.config.Security.APIKey))
+	// router.Use(middleware.APIKeyMiddleware(r.config.Security.APIKey)) // Removed global application
 	router.Use(middleware.RateLimiter(r.config.RateLimit.Rps, r.config.RateLimit.Burst))
 	router.Use(middleware.SecureHeaders())
 	router.Use(middleware.XSSProtection())
@@ -75,6 +75,9 @@ func (r *Router) SetupRouter() *gin.Engine {
 		users.Use(middleware.APIKeyMiddleware(r.config.Security.APIKey)) // Protect user routes if needed
 		{
 			users.GET("/me", userHandler.Me) // TODO: Add auth middleware
+			users.GET("", userHandler.GetAll)
+			users.PUT("/:id", userHandler.Update)
+			users.DELETE("/:id", userHandler.Delete)
 		}
 	}
 

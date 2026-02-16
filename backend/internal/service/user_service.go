@@ -13,6 +13,9 @@ import (
 type UserService interface {
 	Register(req dto.RegisterRequest) (*dto.UserResponse, error)
 	GetMe(userID uint) (*dto.UserResponse, error)
+	GetAll() ([]dto.UserResponse, error)
+	Update(id uint, req dto.UpdateUserRequest) (*dto.UserResponse, error)
+	Delete(id uint) error
 }
 
 type userService struct {
@@ -74,4 +77,65 @@ func (s *userService) GetMe(userID uint) (*dto.UserResponse, error) {
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}, nil
+}
+
+func (s *userService) GetAll() ([]dto.UserResponse, error) {
+	users, err := s.userRepo.FindAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var userResponses []dto.UserResponse
+	for _, user := range users {
+		userResponses = append(userResponses, dto.UserResponse{
+			ID:        user.ID,
+			Name:      user.Name,
+			Email:     user.Email,
+			RoleID:    user.RoleID,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		})
+	}
+	return userResponses, nil
+}
+
+func (s *userService) Update(id uint, req dto.UpdateUserRequest) (*dto.UserResponse, error) {
+	user, err := s.userRepo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.Name != "" {
+		user.Name = req.Name
+	}
+	if req.Email != "" {
+		user.Email = req.Email
+	}
+	if req.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), s.config.Security.BCryptCost)
+		if err != nil {
+			return nil, err
+		}
+		user.Password = string(hashedPassword)
+	}
+	if req.RoleID != 0 {
+		user.RoleID = req.RoleID
+	}
+
+	if err := s.userRepo.Update(user); err != nil {
+		return nil, err
+	}
+
+	return &dto.UserResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		RoleID:    user.RoleID,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}, nil
+}
+
+func (s *userService) Delete(id uint) error {
+	return s.userRepo.Delete(id)
 }
