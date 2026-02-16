@@ -54,34 +54,21 @@ func (r *Router) SetupRouter() *gin.Engine {
 
 	// Repositories
 	userRepo := repository.NewUserRepository(db)
+	permissionRepo := repository.NewPermissionRepository(db)
 
 	// Services
 	authService := service.NewAuthService(userRepo, r.config)
 	userService := service.NewUserService(userRepo, r.config)
+	permissionService := service.NewPermissionService(permissionRepo)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService)
 	userHandler := handler.NewUserHandler(userService)
+	permissionHandler := handler.NewPermissionHandler(permissionService)
 
 	v1 := router.Group("/api/v1")
 	{
-		auth := v1.Group("/auth")
-		{
-			auth.POST("/login", authHandler.Login)
-			auth.POST("/register", userHandler.Register)
-		}
-
-		users := v1.Group("/users")
-		users.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-		{
-			// User can access their own profile
-			users.GET("/me", middleware.RoleGuard("user", "admin"), userHandler.Me)
-
-			// Admin only for CRUD
-			users.GET("", middleware.RoleGuard("admin"), userHandler.GetAll)
-			users.PUT("/:id", middleware.RoleGuard("admin"), userHandler.Update)
-			users.DELETE("/:id", middleware.RoleGuard("admin"), userHandler.Delete)
-		}
+		r.setupPrivateRoutes(v1, authHandler, userHandler, permissionHandler)
 	}
 
 	log.Printf("Server running on port %s", r.config.App.Port)
