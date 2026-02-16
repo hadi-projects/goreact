@@ -57,19 +57,25 @@ func (r *Router) SetupRouter() *gin.Engine {
 
 	// Services
 	authService := service.NewAuthService(userRepo, r.config)
+	userService := service.NewUserService(userRepo, r.config)
 
 	// Handlers
 	authHandler := handler.NewAuthHandler(authService)
+	userHandler := handler.NewUserHandler(userService)
 
 	v1 := router.Group("/api/v1")
 	{
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/login", authHandler.Login)
+			auth.POST("/register", userHandler.Register)
 		}
 
-		// r.setupUserRoutes(v1)
-		// r.setupTicketRoutes(v1)
+		users := v1.Group("/users")
+		users.Use(middleware.APIKeyMiddleware(r.config.Security.APIKey)) // Protect user routes if needed
+		{
+			users.GET("/me", userHandler.Me) // TODO: Add auth middleware
+		}
 	}
 
 	log.Printf("Server running on port %s", r.config.App.Port)

@@ -9,15 +9,19 @@ import (
 	"github.com/hadi-projects/go-react-starter/internal/service"
 )
 
-type AuthHandler struct {
+type AuthHandler interface {
+	Login(c *gin.Context)
+}
+
+type authHandler struct {
 	service service.AuthService
 }
 
-func NewAuthHandler(service service.AuthService) *AuthHandler {
-	return &AuthHandler{service: service}
+func NewAuthHandler(service service.AuthService) AuthHandler {
+	return &authHandler{service: service}
 }
 
-func (h *AuthHandler) Login(c *gin.Context) {
+func (h *authHandler) Login(c *gin.Context) {
 	var loginReq dto.LoginRequest
 	if err := c.ShouldBindJSON(&loginReq); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
