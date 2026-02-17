@@ -14,6 +14,7 @@ func (r *Router) setupPrivateRoutes(
 	roleHandler handler.RoleHandler,
 	logHandler handler.LogHandler,
 	cacheHandler handler.CacheHandler,
+	statisticsHandler handler.StatisticsHandler,
 	generatorHandler handler.GeneratorHandler,
 	// [GENERATOR_INSERT_HANDLER_PARAM]
 ) {
@@ -69,6 +70,13 @@ func (r *Router) setupPrivateRoutes(
 		roles.GET("/:id", middleware.PermissionGuard("get-role"), roleHandler.GetByID)
 		roles.PUT("/:id", middleware.PermissionGuard("edit-role"), roleHandler.Update)
 		roles.DELETE("/:id", middleware.PermissionGuard("delete-role"), roleHandler.Delete)
+	}
+
+	// Statistics
+	statistics := v1.Group("/statistics")
+	statistics.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
+	{
+		statistics.GET("/dashboard", statisticsHandler.GetDashboardStats)
 	}
 
 	// Cache management
