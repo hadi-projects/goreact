@@ -10,7 +10,7 @@ import { getUsers, createUser, updateUser, deleteUser, getRoles } from '../../ap
 
 const Users = () => {
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -30,8 +30,8 @@ const Users = () => {
     const queryClient = useQueryClient();
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ['users', currentPage, itemsPerPage],
-        queryFn: () => getUsers(currentPage, itemsPerPage),
+        queryKey: ['users', currentPage, itemsPerPage, debouncedSearch],
+        queryFn: () => getUsers(currentPage, itemsPerPage, debouncedSearch),
     });
 
     // Fetch roles for mapping role_id to role name
@@ -139,11 +139,6 @@ const Users = () => {
     const users = data?.data || [];
     const meta = data?.meta?.pagination || { total_data: 0, total_pages: 1 };
 
-    // Filter users based on search term
-    const filteredUsers = users.filter(user =>
-        user.email.toLowerCase().includes(debouncedSearch.toLowerCase())
-    );
-
     return (
         <div>
             <div className="mb-6 flex justify-between items-center">
@@ -178,7 +173,7 @@ const Users = () => {
             </div>
 
             <Card className="p-0 overflow-hidden">
-                <Table columns={columns} data={filteredUsers} loading={isLoading} />
+                <Table columns={columns} data={users} loading={isLoading} />
                 {!isLoading && users.length > 0 && (
                     <Pagination
                         currentPage={currentPage}
@@ -186,6 +181,10 @@ const Users = () => {
                         totalItems={meta.total_data}
                         itemsPerPage={itemsPerPage}
                         onPageChange={setCurrentPage}
+                        onLimitChange={(newLimit) => {
+                            setItemsPerPage(newLimit);
+                            setCurrentPage(1);
+                        }}
                     />
                 )}
             </Card>

@@ -32,12 +32,19 @@ func (r *userRepository) FindAll(pagination *dto.PaginationRequest) ([]entity.Us
 	var users []entity.User
 	var total int64
 
-	if err := r.db.Model(&entity.User{}).Count(&total).Error; err != nil {
+	query := r.db.Model(&entity.User{})
+
+	if pagination.Search != "" {
+		searchTerm := "%" + pagination.Search + "%"
+		query = query.Where("email LIKE ?", searchTerm)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
 	offset := (pagination.GetPage() - 1) * pagination.GetLimit()
-	err := r.db.Preload("Role").
+	err := query.Preload("Role").
 		Limit(pagination.GetLimit()).
 		Offset(offset).
 		Find(&users).Error

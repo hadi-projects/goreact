@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import Button from './Button';
 
-const Pagination = ({ currentPage, totalPages, onPageChange, totalItems, itemsPerPage }) => {
+const Pagination = ({ currentPage, totalPages, onPageChange, totalItems, itemsPerPage, onLimitChange }) => {
     const startItem = (currentPage - 1) * itemsPerPage + 1;
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
@@ -35,9 +35,27 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalItems, itemsPe
     };
 
     return (
-        <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-outline-variant">
-            <div className="text-sm text-gray-600">
-                Showing {startItem} to {endItem} of {totalItems} results
+        <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-white border-t border-outline-variant gap-4">
+            <div className="flex items-center gap-4">
+                <div className="text-sm text-gray-600">
+                    Showing <span className="font-semibold">{startItem}</span> to <span className="font-semibold">{endItem}</span> of <span className="font-semibold">{totalItems}</span> results
+                </div>
+
+                {onLimitChange && (
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="limit" className="text-sm text-gray-500">Show:</label>
+                        <select
+                            id="limit"
+                            value={itemsPerPage}
+                            onChange={(e) => onLimitChange(Number(e.target.value))}
+                            className="text-sm border border-outline rounded p-1 focus:ring-2 focus:ring-primary-500 focus:outline-none bg-white transition-all shadow-sm"
+                        >
+                            {[10, 20, 50, 100].map(limit => (
+                                <option key={limit} value={limit}>{limit}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -45,37 +63,45 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalItems, itemsPe
                     variant="outline"
                     onClick={() => onPageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="px-3 py-2 text-sm"
+                    className="px-3 py-2 text-sm h-9 flex items-center shadow-sm"
                 >
+                    <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
                     Previous
                 </Button>
 
-                {getPageNumbers().map((page, index) => (
-                    page === '...' ? (
-                        <span key={`ellipsis-${index}`} className="px-2 text-gray-500">
-                            ...
-                        </span>
-                    ) : (
-                        <button
-                            key={page}
-                            onClick={() => onPageChange(page)}
-                            className={`px-3 py-2 text-sm rounded-md3-sm transition-colors ${currentPage === page
-                                    ? 'bg-primary-500 text-white'
-                                    : 'text-gray-700 hover:bg-primary-50'
-                                }`}
-                        >
-                            {page}
-                        </button>
-                    )
-                ))}
+                <div className="flex items-center gap-1">
+                    {getPageNumbers().map((page, index) => (
+                        page === '...' ? (
+                            <span key={`ellipsis-${index}`} className="px-2 text-gray-400">
+                                ...
+                            </span>
+                        ) : (
+                            <button
+                                key={page}
+                                onClick={() => onPageChange(page)}
+                                className={`w-9 h-9 text-sm font-medium rounded transition-all duration-200 ${currentPage === page
+                                    ? 'bg-primary-500 text-white shadow-md transform scale-105'
+                                    : 'text-gray-600 hover:bg-primary-50 hover:text-primary-600'
+                                    }`}
+                            >
+                                {page}
+                            </button>
+                        )
+                    ))}
+                </div>
 
                 <Button
                     variant="outline"
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-2 text-sm"
+                    className="px-3 py-2 text-sm h-9 flex items-center shadow-sm"
                 >
                     Next
+                    <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                 </Button>
             </div>
         </div>
@@ -88,6 +114,7 @@ Pagination.propTypes = {
     onPageChange: PropTypes.func.isRequired,
     totalItems: PropTypes.number.isRequired,
     itemsPerPage: PropTypes.number.isRequired,
+    onLimitChange: PropTypes.func,
 };
 
 export default Pagination;

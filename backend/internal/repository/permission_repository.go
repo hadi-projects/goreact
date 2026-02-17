@@ -30,12 +30,19 @@ func (r *permissionRepository) FindAll(pagination *dto.PaginationRequest) ([]ent
 	var permissions []entity.Permission
 	var total int64
 
-	if err := r.db.Model(&entity.Permission{}).Count(&total).Error; err != nil {
+	query := r.db.Model(&entity.Permission{})
+
+	if pagination.Search != "" {
+		searchTerm := "%" + pagination.Search + "%"
+		query = query.Where("name LIKE ?", searchTerm)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
 	offset := (pagination.GetPage() - 1) * pagination.GetLimit()
-	err := r.db.Limit(pagination.GetLimit()).
+	err := query.Limit(pagination.GetLimit()).
 		Offset(offset).
 		Find(&permissions).Error
 
