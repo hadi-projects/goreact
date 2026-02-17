@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/hadi-projects/go-react-starter/config"
-	"github.com/hadi-projects/go-react-starter/internal/entity"
+	entity "github.com/hadi-projects/go-react-starter/internal/entity/default"
 	"github.com/hadi-projects/go-react-starter/pkg/database"
 	"github.com/hadi-projects/go-react-starter/pkg/logger"
 )
@@ -22,7 +22,6 @@ func main() {
 		&entity.User{},
 		&entity.Role{},
 		&entity.Permission{},
-		&entity.Abc{},
 		// [GENERATOR_INSERT_MIGRATION]
 	)
 

@@ -10,12 +10,12 @@ import Roles from './pages/admin/Roles'
 import Permissions from './pages/admin/Permissions'
 import Logs from './pages/admin/Logs'
 import GeneratorPage from './pages/admin/GeneratorPage'
-import abcPage from './pages/admin/abcPage';
+import { ThemeProvider } from './context/ThemeContext'
 // [GENERATOR_INSERT_IMPORT]
 
 function App() {
   return (
-    <>
+    <ThemeProvider>
       <Toaster position="top-right" />
       <Routes>
         <Route path="/" element={<Landing />} />
@@ -32,11 +32,10 @@ function App() {
           <Route path="admin/logs" element={<Navigate to="/admin/logs/all" replace />} />
           <Route path="admin/logs/:type" element={<Logs />} />
           <Route path="admin/generator" element={<GeneratorPage />} />
-          					<Route path="admin/abc" element={<abcPage />} />
 					// [GENERATOR_INSERT_ROUTE]
         </Route>
       </Routes>
-    </>
+    </ThemeProvider>
   )
 }
 

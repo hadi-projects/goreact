@@ -11,10 +11,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hadi-projects/go-react-starter/config"
-	"github.com/hadi-projects/go-react-starter/internal/handler"
+	handler "github.com/hadi-projects/go-react-starter/internal/handler/default"
 	"github.com/hadi-projects/go-react-starter/internal/middleware"
-	"github.com/hadi-projects/go-react-starter/internal/repository"
-	"github.com/hadi-projects/go-react-starter/internal/service"
+	repository "github.com/hadi-projects/go-react-starter/internal/repository/default"
+	service "github.com/hadi-projects/go-react-starter/internal/service/default"
 	"github.com/hadi-projects/go-react-starter/pkg/cache"
 	"github.com/hadi-projects/go-react-starter/pkg/database"
 	"github.com/hadi-projects/go-react-starter/pkg/logger"
@@ -58,7 +58,6 @@ func (r *Router) SetupRouter() *gin.Engine {
 	userRepo := repository.NewUserRepository(db)
 	permissionRepo := repository.NewPermissionRepository(db)
 	roleRepo := repository.NewRoleRepository(db)
-	abcRepo := repository.NewAbcRepository(db)
 	// [GENERATOR_INSERT_REPOSITORY]
 
 	// Services
@@ -67,7 +66,7 @@ func (r *Router) SetupRouter() *gin.Engine {
 	permissionService := service.NewPermissionService(permissionRepo, r.cache)
 	roleService := service.NewRoleService(roleRepo, r.cache)
 	logService := service.NewLogService(r.config)
-	abcService := service.NewAbcService(abcRepo, r.cache)
+	statisticsService := service.NewStatisticsService(db)
 	// [GENERATOR_INSERT_SERVICE]
 
 	// Handlers
@@ -77,13 +76,13 @@ func (r *Router) SetupRouter() *gin.Engine {
 	roleHandler := handler.NewRoleHandler(roleService)
 	logHandler := handler.NewLogHandler(logService)
 	cacheHandler := handler.NewCacheHandler(r.cache)
+	statisticsHandler := handler.NewStatisticsHandler(statisticsService)
 	generatorHandler := handler.NewGeneratorHandler(".")
-	abcHandler := handler.NewAbcHandler(abcService)
 	// [GENERATOR_INSERT_HANDLER]
 
 	v1 := router.Group("/api/v1")
 	{
-		r.setupPrivateRoutes(v1, authHandler, userHandler, permissionHandler, roleHandler, logHandler, cacheHandler, generatorHandler, abcHandler)
+		r.setupPrivateRoutes(v1, authHandler, userHandler, permissionHandler, roleHandler, logHandler, cacheHandler, statisticsHandler, generatorHandler)
 		// [GENERATOR_INSERT_HANDLER_PARAM]
 	}
 

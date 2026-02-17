@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/hadi-projects/go-react-starter/internal/handler"
+	handler "github.com/hadi-projects/go-react-starter/internal/handler/default"
 	"github.com/hadi-projects/go-react-starter/internal/middleware"
 )
 
@@ -14,8 +14,8 @@ func (r *Router) setupPrivateRoutes(
 	roleHandler handler.RoleHandler,
 	logHandler handler.LogHandler,
 	cacheHandler handler.CacheHandler,
+	statisticsHandler handler.StatisticsHandler,
 	generatorHandler handler.GeneratorHandler,
-	abcHandler handler.AbcHandler,
 	// [GENERATOR_INSERT_HANDLER_PARAM]
 ) {
 	// Module Generator
@@ -23,16 +23,6 @@ func (r *Router) setupPrivateRoutes(
 	generator.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
 	{
 		generator.POST("", middleware.PermissionGuard("create-module"), generatorHandler.Generate)
-	}
-
-	abc := v1.Group("/abc")
-	abc.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		abc.POST("", abcHandler.Create)
-		abc.GET("", abcHandler.GetAll)
-		abc.GET("/:id", abcHandler.GetByID)
-		abc.PUT("/:id", abcHandler.Update)
-		abc.DELETE("/:id", abcHandler.Delete)
 	}
 	// [GENERATOR_INSERT_GROUP]
 	auth := v1.Group("/auth")
@@ -82,10 +72,18 @@ func (r *Router) setupPrivateRoutes(
 		roles.DELETE("/:id", middleware.PermissionGuard("delete-role"), roleHandler.Delete)
 	}
 
+	// Statistics
+	statistics := v1.Group("/statistics")
+	statistics.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
+	{
+		statistics.GET("/dashboard", statisticsHandler.GetDashboardStats)
+	}
+
 	// Cache management
 	cache := v1.Group("/cache")
 	cache.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
 	{
 		cache.DELETE("/clear", middleware.PermissionGuard("manage-cache"), cacheHandler.ClearAll)
+		cache.GET("/status", middleware.PermissionGuard("manage-cache"), cacheHandler.GetStatus)
 	}
 }

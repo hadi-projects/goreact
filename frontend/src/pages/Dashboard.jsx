@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { clearCache } from '../api/admin';
+import { getDashboardStats } from '../api/statistics';
 
 const Dashboard = () => {
     const clearCacheMutation = useMutation({
@@ -22,59 +23,52 @@ const Dashboard = () => {
         }
     };
 
-    // Dummy statistics data
+    // Fetch real statistics from API
+    const { data: statsData, isLoading } = useQuery({
+        queryKey: ['dashboard-stats'],
+        queryFn: getDashboardStats,
+    });
+
+    // Statistics data with smooth colors - refined for both light and dark modes
     const stats = [
         {
             id: 1,
             title: 'Total Users',
-            value: '254',
-            change: '+12%',
-            trend: 'up',
+            value: statsData?.data?.total_users?.toString() || '0',
             icon: (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
             ),
-            color: 'bg-blue-500'
+            gradient: 'from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10',
+            iconBg: 'bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-800/20 dark:to-indigo-800/20',
+            iconColor: 'text-blue-600 dark:text-blue-400'
         },
         {
             id: 2,
             title: 'Total Roles',
-            value: '8',
-            change: '+2',
-            trend: 'up',
+            value: statsData?.data?.total_roles?.toString() || '0',
             icon: (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
             ),
-            color: 'bg-green-500'
+            gradient: 'from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10',
+            iconBg: 'bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-800/20 dark:to-pink-800/20',
+            iconColor: 'text-purple-600 dark:text-purple-400'
         },
         {
             id: 3,
             title: 'Permissions',
-            value: '42',
-            change: '+5',
-            trend: 'up',
+            value: statsData?.data?.total_permissions?.toString() || '0',
             icon: (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                 </svg>
             ),
-            color: 'bg-purple-500'
-        },
-        {
-            id: 4,
-            title: 'Active Sessions',
-            value: '89',
-            change: '-3%',
-            trend: 'down',
-            icon: (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-            ),
-            color: 'bg-orange-500'
+            gradient: 'from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10',
+            iconBg: 'bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-800/20 dark:to-orange-800/20',
+            iconColor: 'text-amber-600 dark:text-amber-400'
         }
     ];
 
@@ -87,101 +81,140 @@ const Dashboard = () => {
     ];
 
     return (
-        <div>
+        <div className="max-w-7xl mx-auto">
             {/* Page Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-600 mt-2">Welcome back! Here's what's happening today.</p>
+                <h1 className="text-3xl font-bold text-surface-on mb-2">Dashboard</h1>
+                <p className="text-surface-on-variant">Welcome back! Here's an overview of your system.</p>
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {stats.map((stat) => (
-                    <Card key={stat.id}>
-                        <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                                <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
-                                <h3 className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</h3>
-                                <div className="flex items-center gap-1">
-                                    <span className={`text-sm font-medium ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
-                                        }`}>
-                                        {stat.change}
-                                    </span>
-                                    <span className="text-xs text-gray-500">from last month</span>
-                                </div>
-                            </div>
-                            <div className={`${stat.color} p-3 rounded-xl text-white`}>
-                                {stat.icon}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {isLoading ? (
+                    // Loading skeleton
+                    [1, 2, 3].map((i) => (
+                        <div key={i} className="bg-surface-container rounded-2xl p-6 border border-outline-variant/20">
+                            <div className="animate-pulse">
+                                <div className="h-4 bg-surface-variant rounded w-1/3 mb-4"></div>
+                                <div className="h-12 bg-surface-variant rounded w-2/3"></div>
                             </div>
                         </div>
-                    </Card>
-                ))}
+                    ))
+                ) : (
+                    stats.map((stat) => (
+                        <div
+                            key={stat.id}
+                            className={`relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br ${stat.gradient} 
+                                      border border-outline-variant/30 transition-all duration-300 hover:border-outline-variant/60
+                                      hover:-translate-y-1`}
+                        >
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-surface-on-variant mb-3">{stat.title}</p>
+                                    <h3 className="text-5xl font-bold text-surface-on tracking-tight">
+                                        {stat.value}
+                                    </h3>
+                                </div>
+                                <div className={`${stat.iconBg} ${stat.iconColor} p-3.5 rounded-xl`}>
+                                    {stat.icon}
+                                </div>
+                            </div>
+                            {/* Decorative element */}
+                            <div className="absolute -bottom-2 -right-2 w-24 h-24 bg-white/20 rounded-full blur-2xl"></div>
+                        </div>
+                    ))
+                )}
             </div>
 
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Recent Activity */}
-                <Card className="lg:col-span-2">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+                <div className="lg:col-span-2 bg-surface-container rounded-2xl p-6 border border-outline-variant/20">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-surface-on">Recent Activity</h2>
+                        <span className="text-xs font-medium text-surface-on-variant bg-surface-variant/30 px-3 py-1.5 rounded-full">
+                            Last 24 hours
+                        </span>
+                    </div>
                     <div className="space-y-4">
                         {recentActivities.map((activity) => (
-                            <div key={activity.id} className="flex items-start gap-3 pb-4 border-b border-gray-100 last:border-0">
-                                <div className="w-2 h-2 bg-primary-500 rounded-full mt-2"></div>
-                                <div className="flex-1">
-                                    <p className="text-gray-900">{activity.action}</p>
-                                    <p className="text-sm text-gray-500 mt-1">{activity.time}</p>
+                            <div
+                                key={activity.id}
+                                className="flex items-start gap-4 p-3 rounded-xl hover:bg-surface-variant/20 
+                                         transition-colors duration-200 group"
+                            >
+                                <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0 group-hover:scale-125 transition-transform"></div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-surface-on font-medium">{activity.action}</p>
+                                    <p className="text-xs text-surface-on-variant mt-1">{activity.time}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
-                </Card>
+                </div>
 
                 {/* Quick Actions */}
-                <Card>
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+                <div className="bg-surface-container rounded-2xl p-6 border border-outline-variant/20">
+                    <h2 className="text-xl font-bold text-surface-on mb-6">Quick Actions</h2>
                     <div className="space-y-3">
                         <Link to="/admin/users">
-                            <Button fullWidth className="justify-start">
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                                Manage Users
-                            </Button>
+                            <button className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-primary/5 
+                                             hover:bg-primary/10 text-primary font-medium transition-all duration-200 
+                                             hover:scale-[1.02] group">
+                                <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm">Manage Users</span>
+                            </button>
                         </Link>
+
                         <Link to="/admin/roles">
-                            <Button variant="secondary" fullWidth className="justify-start">
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                                Manage Roles
-                            </Button>
+                            <button className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-surface-variant/20 
+                                             hover:bg-surface-variant/40 text-surface-on font-medium transition-all duration-200 
+                                             hover:scale-[1.02] group">
+                                <div className="p-2 bg-surface-variant/30 rounded-lg group-hover:bg-surface-variant/50 transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm">Manage Roles</span>
+                            </button>
                         </Link>
+
                         <Link to="/admin/permissions">
-                            <Button variant="outline" fullWidth className="justify-start">
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                </svg>
-                                Manage Permissions
-                            </Button>
+                            <button className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-surface-variant/20 
+                                             hover:bg-surface-variant/40 text-surface-on font-medium transition-all duration-200 
+                                             hover:scale-[1.02] group">
+                                <div className="p-2 bg-surface-variant/30 rounded-lg group-hover:bg-surface-variant/50 transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm">Manage Permissions</span>
+                            </button>
                         </Link>
 
                         {/* Clear Cache Button */}
-                        <div className="pt-3 border-t border-gray-200">
-                            <Button
-                                variant="danger"
-                                fullWidth
-                                className="justify-start"
+                        <div className="pt-3 mt-3 border-t border-outline-variant/30">
+                            <button
                                 onClick={handleClearCache}
                                 disabled={clearCacheMutation.isPending}
+                                className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-error/5 hover:bg-error/10 
+                                         text-error font-medium transition-all duration-200 hover:scale-[1.02] group 
+                                         disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                {clearCacheMutation.isPending ? 'Clearing...' : 'Clear Cache'}
-                            </Button>
+                                <div className="p-2 bg-error/10 rounded-lg group-hover:bg-error/20 transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm">{clearCacheMutation.isPending ? 'Clearing...' : 'Clear Cache'}</span>
+                            </button>
                         </div>
                     </div>
-                </Card>
+                </div>
             </div>
         </div>
     );
