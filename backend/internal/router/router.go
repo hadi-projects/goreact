@@ -58,12 +58,6 @@ func (r *Router) SetupRouter() *gin.Engine {
 	userRepo := repository.NewUserRepository(db)
 	permissionRepo := repository.NewPermissionRepository(db)
 	roleRepo := repository.NewRoleRepository(db)
-	abcRepo := repository.NewAbcRepository(db)
-		xyzRepo := repository.NewxyzRepository(db)
-		ninaRepo := repository.NewninaRepository(db)
-		sdsdsdRepo := repository.NewsdsdsdRepository(db)
-		akusajaRepo := repository.NewakusajaRepository(db)
-		makanRepo := repository.NewMakanRepository(db)
 	// [GENERATOR_INSERT_REPOSITORY]
 
 	// Services
@@ -72,12 +66,6 @@ func (r *Router) SetupRouter() *gin.Engine {
 	permissionService := service.NewPermissionService(permissionRepo, r.cache)
 	roleService := service.NewRoleService(roleRepo, r.cache)
 	logService := service.NewLogService(r.config)
-	abcService := service.NewAbcService(abcRepo, r.cache)
-		xyzService := service.NewxyzService(xyzRepo, r.cache)
-		ninaService := service.NewninaService(ninaRepo, r.cache)
-		sdsdsdService := service.NewsdsdsdService(sdsdsdRepo, r.cache)
-		akusajaService := service.NewakusajaService(akusajaRepo, r.cache)
-		makanService := service.NewMakanService(makanRepo, r.cache)
 	// [GENERATOR_INSERT_SERVICE]
 
 	// Handlers
@@ -88,22 +76,11 @@ func (r *Router) SetupRouter() *gin.Engine {
 	logHandler := handler.NewLogHandler(logService)
 	cacheHandler := handler.NewCacheHandler(r.cache)
 	generatorHandler := handler.NewGeneratorHandler(".")
-	abcHandler := handler.NewAbcHandler(abcService)
-		xyzHandler := handler.NewxyzHandler(xyzService)
-		ninaHandler := handler.NewninaHandler(ninaService)
-		sdsdsdHandler := handler.NewsdsdsdHandler(sdsdsdService)
-		akusajaHandler := handler.NewakusajaHandler(akusajaService)
-		makanHandler := handler.NewMakanHandler(makanService)
 	// [GENERATOR_INSERT_HANDLER]
 
 	v1 := router.Group("/api/v1")
 	{
-		r.setupPrivateRoutes(v1, authHandler, userHandler, permissionHandler, roleHandler, logHandler, cacheHandler, generatorHandler, abcHandler)
-				xyzHandler,
-				ninaHandler,
-				sdsdsdHandler,
-				akusajaHandler,
-				makanHandler,
+		r.setupPrivateRoutes(v1, authHandler, userHandler, permissionHandler, roleHandler, logHandler, cacheHandler, generatorHandler)
 		// [GENERATOR_INSERT_HANDLER_PARAM]
 	}
 

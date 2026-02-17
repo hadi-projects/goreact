@@ -15,12 +15,6 @@ func (r *Router) setupPrivateRoutes(
 	logHandler handler.LogHandler,
 	cacheHandler handler.CacheHandler,
 	generatorHandler handler.GeneratorHandler,
-	abcHandler handler.AbcHandler,
-		xyzHandler handler.xyzHandler,
-		ninaHandler handler.ninaHandler,
-		sdsdsdHandler handler.sdsdsdHandler,
-		akusajaHandler handler.akusajaHandler,
-		makanHandler handler.MakanHandler,
 	// [GENERATOR_INSERT_HANDLER_PARAM]
 ) {
 	// Module Generator
@@ -28,61 +22,6 @@ func (r *Router) setupPrivateRoutes(
 	generator.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
 	{
 		generator.POST("", middleware.PermissionGuard("create-module"), generatorHandler.Generate)
-	}
-
-	abc := v1.Group("/abc")
-	abc.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		abc.POST("", abcHandler.Create)
-		abc.GET("", abcHandler.GetAll)
-		abc.GET("/:id", abcHandler.GetByID)
-		abc.PUT("/:id", abcHandler.Update)
-		abc.DELETE("/:id", abcHandler.Delete)
-	}
-		xyz := v1.Group("/xyz")
-	xyz.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		xyz.POST("", xyzHandler.Create)
-		xyz.GET("", xyzHandler.GetAll)
-		xyz.GET("/:id", xyzHandler.GetByID)
-		xyz.PUT("/:id", xyzHandler.Update)
-		xyz.DELETE("/:id", xyzHandler.Delete)
-	}
-		nina := v1.Group("/nina")
-	nina.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		nina.POST("", ninaHandler.Create)
-		nina.GET("", ninaHandler.GetAll)
-		nina.GET("/:id", ninaHandler.GetByID)
-		nina.PUT("/:id", ninaHandler.Update)
-		nina.DELETE("/:id", ninaHandler.Delete)
-	}
-		sdsdsd := v1.Group("/sdsdsdsdd")
-	sdsdsd.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		sdsdsd.POST("", sdsdsdHandler.Create)
-		sdsdsd.GET("", sdsdsdHandler.GetAll)
-		sdsdsd.GET("/:id", sdsdsdHandler.GetByID)
-		sdsdsd.PUT("/:id", sdsdsdHandler.Update)
-		sdsdsd.DELETE("/:id", sdsdsdHandler.Delete)
-	}
-		akusaja := v1.Group("/akusaja")
-	akusaja.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		akusaja.POST("", akusajaHandler.Create)
-		akusaja.GET("", akusajaHandler.GetAll)
-		akusaja.GET("/:id", akusajaHandler.GetByID)
-		akusaja.PUT("/:id", akusajaHandler.Update)
-		akusaja.DELETE("/:id", akusajaHandler.Delete)
-	}
-		makan := v1.Group("/makan")
-	makan.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		makan.POST("", makanHandler.Create)
-		makan.GET("", makanHandler.GetAll)
-		makan.GET("/:id", makanHandler.GetByID)
-		makan.PUT("/:id", makanHandler.Update)
-		makan.DELETE("/:id", makanHandler.Delete)
 	}
 	// [GENERATOR_INSERT_GROUP]
 	auth := v1.Group("/auth")

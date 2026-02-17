@@ -127,13 +127,19 @@ func (s *logService) readLogFile(filePath string, logType string) ([]dto.LogResp
 
 		if val, ok := raw["time"].(string); ok {
 			if t, err := json.Marshal(val); err == nil {
-				json.Unmarshal(t, &log.Time)
+				if err := json.Unmarshal(t, &log.Time); err != nil {
+					fmt.Printf("DEBUG: Failed to unmarshal time (time): %v, val: %s\n", err, val)
+				}
 			}
 		} else if val, ok := raw["timestamp"].(string); ok {
 			// System logs use 'timestamp' instead of 'time'
 			if t, err := json.Marshal(val); err == nil {
-				json.Unmarshal(t, &log.Time)
+				if err := json.Unmarshal(t, &log.Time); err != nil {
+					fmt.Printf("DEBUG: Failed to unmarshal time (timestamp): %v, val: %s\n", err, val)
+				}
 			}
+		} else {
+			fmt.Printf("DEBUG: No time or timestamp found in log: %v\n", raw)
 		}
 
 		// Collect other fields into Details
