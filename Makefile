@@ -12,3 +12,27 @@ run-seeder:
 
 generate:
 	cd backend && go run ./cmd/generator/main.go -config $(config) -base .
+
+docker-up:
+	docker-compose up -d --build
+
+docker-down:
+	docker-compose down
+
+docker-build:
+	docker-compose build --no-cache
+
+docker-logs:
+	docker-compose logs -f
+
+docker-logs-backend:
+	docker-compose logs -f backend
+
+docker-logs-frontend:
+	docker-compose logs -f frontend
+
+docker-migrate:
+	docker-compose exec backend ./migrate
+
+docker-seed:
+	docker-compose exec backend ./seeder
