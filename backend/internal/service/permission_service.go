@@ -9,6 +9,7 @@ import (
 	"github.com/hadi-projects/go-react-starter/internal/entity"
 	"github.com/hadi-projects/go-react-starter/internal/repository"
 	"github.com/hadi-projects/go-react-starter/pkg/cache"
+	"github.com/hadi-projects/go-react-starter/pkg/logger"
 )
 
 type PermissionService interface {
@@ -32,7 +33,8 @@ func NewPermissionService(repo repository.PermissionRepository, cache cache.Cach
 
 func (s *permissionService) Create(req dto.CreatePermissionRequest) (*dto.PermissionResponse, error) {
 	permission := &entity.Permission{
-		Name: req.Name,
+		Name:        req.Name,
+		Description: req.Description,
 	}
 
 	if err := s.repo.Create(permission); err != nil {
@@ -42,11 +44,18 @@ func (s *permissionService) Create(req dto.CreatePermissionRequest) (*dto.Permis
 	// Invalidate permissions list cache
 	s.cache.DeletePattern("permissions:*")
 
+	logger.AuditLogger.Info().
+		Uint("permission_id", permission.ID).
+		Str("name", permission.Name).
+		Str("action", "permission_creation").
+		Msg("permission created")
+
 	return &dto.PermissionResponse{
-		ID:        permission.ID,
-		Name:      permission.Name,
-		CreatedAt: permission.CreatedAt,
-		UpdatedAt: permission.UpdatedAt,
+		ID:          permission.ID,
+		Name:        permission.Name,
+		Description: permission.Description,
+		CreatedAt:   permission.CreatedAt,
+		UpdatedAt:   permission.UpdatedAt,
 	}, nil
 }
 
@@ -66,10 +75,11 @@ func (s *permissionService) GetAll(pagination *dto.PaginationRequest) (*dto.Pagi
 	var responses []dto.PermissionResponse
 	for _, perm := range permissions {
 		responses = append(responses, dto.PermissionResponse{
-			ID:        perm.ID,
-			Name:      perm.Name,
-			CreatedAt: perm.CreatedAt,
-			UpdatedAt: perm.UpdatedAt,
+			ID:          perm.ID,
+			Name:        perm.Name,
+			Description: perm.Description,
+			CreatedAt:   perm.CreatedAt,
+			UpdatedAt:   perm.UpdatedAt,
 		})
 	}
 
@@ -97,6 +107,7 @@ func (s *permissionService) Update(id uint, req dto.UpdatePermissionRequest) (*d
 	}
 
 	permission.Name = req.Name
+	permission.Description = req.Description
 	if err := s.repo.Update(permission); err != nil {
 		return nil, err
 	}
@@ -104,17 +115,29 @@ func (s *permissionService) Update(id uint, req dto.UpdatePermissionRequest) (*d
 	// Invalidate permissions list cache
 	s.cache.DeletePattern("permissions:*")
 
+	logger.AuditLogger.Info().
+		Uint("permission_id", permission.ID).
+		Str("name", permission.Name).
+		Str("action", "permission_update").
+		Msg("permission updated")
+
 	return &dto.PermissionResponse{
-		ID:        permission.ID,
-		Name:      permission.Name,
-		CreatedAt: permission.CreatedAt,
-		UpdatedAt: permission.UpdatedAt,
+		ID:          permission.ID,
+		Name:        permission.Name,
+		Description: permission.Description,
+		CreatedAt:   permission.CreatedAt,
+		UpdatedAt:   permission.UpdatedAt,
 	}, nil
 }
 
 func (s *permissionService) Delete(id uint) error {
 	// Invalidate permissions list cache
 	s.cache.DeletePattern("permissions:*")
+
+	logger.AuditLogger.Info().
+		Uint("target_permission_id", id).
+		Str("action", "permission_deletion").
+		Msg("permission deleted")
 
 	return s.repo.Delete(id)
 }

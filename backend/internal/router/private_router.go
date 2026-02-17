@@ -12,11 +12,40 @@ func (r *Router) setupPrivateRoutes(
 	userHandler handler.UserHandler,
 	permissionHandler handler.PermissionHandler,
 	roleHandler handler.RoleHandler,
+	logHandler handler.LogHandler,
+	cacheHandler handler.CacheHandler,
+	generatorHandler handler.GeneratorHandler,
+	abcHandler handler.AbcHandler,
+	// [GENERATOR_INSERT_HANDLER_PARAM]
 ) {
+	// Module Generator
+	generator := v1.Group("/generator")
+	generator.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
+	{
+		generator.POST("", middleware.PermissionGuard("create-module"), generatorHandler.Generate)
+	}
+
+	abc := v1.Group("/abc")
+	abc.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
+	{
+		abc.POST("", abcHandler.Create)
+		abc.GET("", abcHandler.GetAll)
+		abc.GET("/:id", abcHandler.GetByID)
+		abc.PUT("/:id", abcHandler.Update)
+		abc.DELETE("/:id", abcHandler.Delete)
+	}
+	// [GENERATOR_INSERT_GROUP]
 	auth := v1.Group("/auth")
 	{
 		auth.POST("/login", authHandler.Login)
 		auth.POST("/register", userHandler.Register)
+	}
+
+	logs := v1.Group("/logs")
+	logs.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
+	{
+		// Internal permission check is handled inside GetLogs
+		logs.GET("", logHandler.GetLogs)
 	}
 
 	users := v1.Group("/users")
@@ -26,6 +55,7 @@ func (r *Router) setupPrivateRoutes(
 		users.GET("/me", middleware.PermissionGuard("get-profile"), userHandler.Me)
 
 		// Admin only for CRUD
+		users.POST("", middleware.PermissionGuard("create-user"), userHandler.Create)
 		users.GET("", middleware.PermissionGuard("get-user"), userHandler.GetAll)
 		users.PUT("/:id", middleware.PermissionGuard("edit-user"), userHandler.Update)
 		users.DELETE("/:id", middleware.PermissionGuard("delete-user"), userHandler.Delete)
@@ -50,5 +80,12 @@ func (r *Router) setupPrivateRoutes(
 		roles.GET("/:id", middleware.PermissionGuard("get-role"), roleHandler.GetByID)
 		roles.PUT("/:id", middleware.PermissionGuard("edit-role"), roleHandler.Update)
 		roles.DELETE("/:id", middleware.PermissionGuard("delete-role"), roleHandler.Delete)
+	}
+
+	// Cache management
+	cache := v1.Group("/cache")
+	cache.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
+	{
+		cache.DELETE("/clear", middleware.PermissionGuard("manage-cache"), cacheHandler.ClearAll)
 	}
 }

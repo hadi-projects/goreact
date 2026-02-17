@@ -50,6 +50,7 @@ var (
 	DBLogger        zerolog.Logger
 	RedisLogger     zerolog.Logger
 	RateLimitLogger zerolog.Logger
+	AuditLogger     zerolog.Logger
 )
 
 func InitLogger(cfg *config.Config) {
@@ -62,6 +63,7 @@ func InitLogger(cfg *config.Config) {
 	DBLogger = newZeroLogger(*cfg, "db.log")
 	RedisLogger = newZeroLogger(*cfg, "redis.log")
 	RateLimitLogger = newZeroLogger(*cfg, "rate_limit.log")
+	AuditLogger = newZeroLogger(*cfg, "audit.log")
 }
 
 func NewLogger(cfg config.Config, fileName string) Logger {

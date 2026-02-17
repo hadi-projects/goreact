@@ -8,6 +8,7 @@ import (
 	"github.com/hadi-projects/go-react-starter/config"
 	"github.com/hadi-projects/go-react-starter/internal/dto"
 	"github.com/hadi-projects/go-react-starter/internal/repository"
+	"github.com/hadi-projects/go-react-starter/pkg/logger"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,12 +29,21 @@ func (s *authService) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
 	// 1. Find user by email
 	user, err := s.userRepo.FindByEmail(req.Email)
 	if err != nil {
+		logger.AuthLogger.Warn().
+			Str("email", req.Email).
+			Str("action", "login").
+			Msg("login failed: user not found")
 		return nil, errors.New("invalid email or password")
 	}
 
 	// 2. Verify password
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
+		logger.AuthLogger.Warn().
+			Uint("user_id", user.ID).
+			Str("email", user.Email).
+			Str("action", "login").
+			Msg("login failed: invalid password")
 		return nil, errors.New("invalid email or password")
 	}
 
@@ -55,6 +65,12 @@ func (s *authService) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	logger.AuthLogger.Info().
+		Uint("user_id", user.ID).
+		Str("email", user.Email).
+		Str("action", "login").
+		Msg("login successful")
 
 	// 4. Return response
 	return &dto.LoginResponse{

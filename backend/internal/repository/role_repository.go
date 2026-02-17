@@ -46,12 +46,19 @@ func (r *roleRepository) FindAll(pagination *dto.PaginationRequest) ([]entity.Ro
 	var roles []entity.Role
 	var total int64
 
-	if err := r.db.Model(&entity.Role{}).Count(&total).Error; err != nil {
+	query := r.db.Model(&entity.Role{})
+
+	if pagination.Search != "" {
+		searchTerm := "%" + pagination.Search + "%"
+		query = query.Where("name LIKE ?", searchTerm)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
 	offset := (pagination.GetPage() - 1) * pagination.GetLimit()
-	err := r.db.Preload("Permissions").
+	err := query.Preload("Permissions").
 		Limit(pagination.GetLimit()).
 		Offset(offset).
 		Find(&roles).Error

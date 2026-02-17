@@ -9,6 +9,7 @@ import (
 	"github.com/hadi-projects/go-react-starter/internal/entity"
 	"github.com/hadi-projects/go-react-starter/internal/repository"
 	"github.com/hadi-projects/go-react-starter/pkg/cache"
+	"github.com/hadi-projects/go-react-starter/pkg/logger"
 )
 
 type RoleService interface {
@@ -33,7 +34,8 @@ func NewRoleService(roleRepo repository.RoleRepository, cache cache.CacheService
 
 func (s *roleService) Create(req dto.CreateRoleRequest) (*dto.RoleResponse, error) {
 	role := &entity.Role{
-		Name: req.Name,
+		Name:        req.Name,
+		Description: req.Description,
 	}
 
 	if err := s.roleRepo.Create(role, req.PermissionIDs); err != nil {
@@ -42,6 +44,12 @@ func (s *roleService) Create(req dto.CreateRoleRequest) (*dto.RoleResponse, erro
 
 	// Invalidate roles list cache
 	s.cache.DeletePattern("roles:*")
+
+	logger.AuditLogger.Info().
+		Uint("role_id", role.ID).
+		Str("name", role.Name).
+		Str("action", "role_creation").
+		Msg("role created")
 
 	// Fetch again to get permissions populated (or we can construct response manually if we trust repo)
 	// Better to fetch to be sure.
@@ -120,6 +128,10 @@ func (s *roleService) Update(id uint, req dto.UpdateRoleRequest) (*dto.RoleRespo
 		role.Name = req.Name
 	}
 
+	if req.Description != "" {
+		role.Description = req.Description
+	}
+
 	if err := s.roleRepo.Update(role, req.PermissionIDs); err != nil {
 		return nil, err
 	}
@@ -127,6 +139,12 @@ func (s *roleService) Update(id uint, req dto.UpdateRoleRequest) (*dto.RoleRespo
 	// Invalidate role cache and roles list cache
 	s.cache.Delete(fmt.Sprintf("role:%d", id))
 	s.cache.DeletePattern("roles:*")
+
+	logger.AuditLogger.Info().
+		Uint("role_id", role.ID).
+		Str("name", role.Name).
+		Str("action", "role_update").
+		Msg("role updated")
 
 	updatedRole, err := s.roleRepo.FindByID(id)
 	if err != nil {
@@ -140,6 +158,11 @@ func (s *roleService) Delete(id uint) error {
 	// Invalidate role cache and roles list cache
 	s.cache.Delete(fmt.Sprintf("role:%d", id))
 	s.cache.DeletePattern("roles:*")
+
+	logger.AuditLogger.Info().
+		Uint("target_role_id", id).
+		Str("action", "role_deletion").
+		Msg("role deleted")
 
 	return s.roleRepo.Delete(id)
 }
@@ -158,6 +181,7 @@ func (s *roleService) mapToResponse(role *entity.Role) *dto.RoleResponse {
 	return &dto.RoleResponse{
 		ID:          role.ID,
 		Name:        role.Name,
+		Description: role.Description,
 		Permissions: permissions,
 		CreatedAt:   role.CreatedAt,
 		UpdatedAt:   role.UpdatedAt,

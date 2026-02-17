@@ -1,0 +1,176 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply transition-colors duration-200;
+  }
+
+  body {
+    background-color: theme('colors.surface.DEFAULT');
+    color: theme('colors.surface.on');
+    @apply font-sans text-sm;
+  }
+
+  h1 {
+    @apply text-2xl font-semibold;
+  }
+
+  h2 {
+    @apply text-xl font-semibold;
+  }
+
+  h3 {
+    @apply text-lg font-semibold;
+  }
+
+  h4,
+  h5,
+  h6 {
+    @apply text-base font-semibold;
+  }
+
+  p {
+    @apply text-sm;
+  }
+}
+
+@layer components {
+
+  /* MD3 Button Styles - Expressive */
+  .btn {
+    @apply px-6 py-3 rounded-full font-medium text-sm transition-all duration-300;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    background-color: theme('colors.primary.500');
+    color: theme('colors.on-primary');
+    @apply hover:bg-primary-600;
+    @apply focus:ring-primary-500;
+  }
+
+  .btn-secondary {
+    background-color: theme('colors.secondary.container');
+    color: theme('colors.secondary.on-container');
+    @apply transition-colors duration-300;
+  }
+
+  .btn-outline {
+    border: 1px solid theme('colors.outline.DEFAULT');
+    color: theme('colors.primary.500');
+    @apply hover:bg-primary-50;
+  }
+
+  /* MD3 Card - Expressive */
+  .card {
+    background-color: theme('colors.surface.container-low');
+    @apply rounded-md3-xl p-6 transition-all duration-300;
+  }
+
+  .card-high {
+    background-color: theme('colors.surface.container-highest');
+    @apply border border-outline-variant;
+  }
+
+  /* MD3 Text Field - Expressive */
+  .text-field {
+    background-color: theme('colors.surface.container-high');
+    border: 1px solid theme('colors.outline.DEFAULT');
+    color: theme('colors.surface.on');
+    @apply w-full px-4 py-3 rounded-xl;
+    @apply focus:border-primary-500 focus:ring-1 focus:ring-primary-500;
+    @apply text-sm;
+
+    &::placeholder {
+      color: theme('colors.surface.on-variant');
+      opacity: 0.5;
+    }
+
+    @apply focus:outline-none transition-all duration-300;
+  }
+
+  .text-field-label {
+    @apply block text-sm font-medium text-surface-on mb-1.5 px-1;
+  }
+
+  .text-field-error {
+    border-color: theme('colors.error.DEFAULT') !important;
+  }
+
+  .text-field-error:focus,
+  .text-field-error:focus-within {
+    border-color: theme('colors.error.DEFAULT') !important;
+    outline: none !important;
+    box-shadow: 0 0 0 1px theme('colors.error.DEFAULT') !important;
+  }
+
+  .text-field-error-message {
+    color: theme('colors.error.DEFAULT');
+    @apply text-xs mt-1.5 px-1 font-medium;
+  }
+
+  .text-field-helper {
+    @apply text-xs text-surface-on-variant mt-1.5 px-1;
+  }
+
+  /* Navigation Specifics */
+  .nav-rail {
+    background-color: theme('colors.surface.container-low');
+    border-right: 1px solid theme('colors.outline-variant');
+    @apply w-20 flex flex-col items-center py-4 z-30 transition-all duration-300;
+  }
+
+  .nav-drawer {
+    background-color: theme('colors.surface.container-low');
+    border-right: 1px solid theme('colors.outline-variant');
+    @apply w-64 flex flex-col z-20 transition-all duration-300;
+  }
+
+  .nav-item-active {
+    background-color: theme('colors.secondary.container');
+    color: theme('colors.secondary.on-container');
+  }
+
+  .nav-pill {
+    @apply flex items-center justify-center w-14 h-8 rounded-full transition-all duration-300;
+  }
+}
+
+@layer utilities {
+  .state-layer {
+    @apply relative overflow-hidden;
+  }
+
+  .state-layer::before {
+    content: '';
+    @apply absolute inset-0 bg-current opacity-0 transition-opacity duration-300;
+  }
+
+  .state-layer:hover::before {
+    @apply opacity-[0.08];
+  }
+
+  .state-layer:active::before {
+    @apply opacity-[0.12];
+  }
+
+  .surface-container-low {
+    background-color: theme('colors.surface.container-low');
+  }
+
+  .surface-container {
+    background-color: theme('colors.surface.container');
+  }
+
+  .surface-container-high {
+    background-color: theme('colors.surface.container-high');
+  }
+
+  .surface-container-highest {
+    background-color: theme('colors.surface.container-highest');
+  }
+}
