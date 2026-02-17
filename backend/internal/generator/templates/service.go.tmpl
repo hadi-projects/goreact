@@ -77,7 +77,7 @@ func (s *{{.ModuleNameLower}}Service) GetAll(pagination *dto.PaginationRequest) 
 		Meta: dto.PaginationMeta{
 			CurrentPage: pagination.GetPage(),
 			TotalPages:  int(math.Ceil(float64(total) / float64(pagination.GetLimit()))),
-			TotalItems:  total,
+			TotalData:   total,
 			Limit:       pagination.GetLimit(),
 		},
 	}

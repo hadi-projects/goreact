@@ -58,7 +58,8 @@ func (r *roleRepository) FindAll(pagination *dto.PaginationRequest) ([]entity.Ro
 	}
 
 	offset := (pagination.GetPage() - 1) * pagination.GetLimit()
-	err := query.Preload("Permissions").
+	err := query.Order("id DESC").
+		Preload("Permissions").
 		Limit(pagination.GetLimit()).
 		Offset(offset).
 		Find(&roles).Error

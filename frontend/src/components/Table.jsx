@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-const Table = ({ columns, data, loading = false }) => {
+const Table = ({ columns, data, loading = false, hideEmptyState = false }) => {
     if (loading) {
         return (
             <div className="w-full overflow-x-auto">
@@ -31,6 +31,9 @@ const Table = ({ columns, data, loading = false }) => {
     }
 
     if (!data || data.length === 0) {
+        if (hideEmptyState) {
+            return null;
+        }
         return (
             <div className="w-full text-center py-12">
                 <p className="text-gray-500 text-lg">No data available</p>
@@ -82,6 +85,7 @@ Table.propTypes = {
     ).isRequired,
     data: PropTypes.array.isRequired,
     loading: PropTypes.bool,
+    hideEmptyState: PropTypes.bool,
 };
 
 export default Table;

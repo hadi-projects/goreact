@@ -3,6 +3,7 @@ package service
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -43,11 +44,14 @@ func (s *logService) GetLogs(query dto.LogQuery) ([]dto.LogResponse, error) {
 
 	for _, fileName := range filesToRead {
 		filePath := filepath.Join(s.config.Log.Dir, fileName)
+		fmt.Printf("DEBUG: Reading log file: %s\n", filePath)
 		logs, err := s.readLogFile(filePath, strings.TrimSuffix(fileName, ".log"))
 		if err != nil {
+			fmt.Printf("DEBUG: Error reading %s: %v\n", filePath, err)
 			// Skip if file doesn't exist yet
 			continue
 		}
+		fmt.Printf("DEBUG: Successfully read %d logs from %s\n", len(logs), filePath)
 		allLogs = append(allLogs, logs...)
 	}
 
@@ -125,8 +129,11 @@ func (s *logService) readLogFile(filePath string, logType string) ([]dto.LogResp
 			if t, err := json.Marshal(val); err == nil {
 				json.Unmarshal(t, &log.Time)
 			}
-			// Zerolog default time format is often RFC3339 or similar
-			// dto.LogResponse has time.Time, so Unmarshal handles it if it's JSON string
+		} else if val, ok := raw["timestamp"].(string); ok {
+			// System logs use 'timestamp' instead of 'time'
+			if t, err := json.Marshal(val); err == nil {
+				json.Unmarshal(t, &log.Time)
+			}
 		}
 
 		// Collect other fields into Details
@@ -136,6 +143,7 @@ func (s *logService) readLogFile(filePath string, logType string) ([]dto.LogResp
 		delete(raw, "user_id")
 		delete(raw, "email")
 		delete(raw, "time")
+		delete(raw, "timestamp")
 		delete(raw, "request_id")
 		log.Details = raw
 

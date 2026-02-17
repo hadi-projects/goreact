@@ -5,14 +5,14 @@ import Card from '../../components/Card';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import TextField from '../../components/TextField';
-import { 
-    getAllabcs, 
-    createabc, 
-    updateabc, 
-    deleteabc 
+import {
+    getAllabcs,
+    createabc,
+    updateabc,
+    deleteabc
 } from '../../api/abc';
 
-const abcPage = () => {
+const AbcPage = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,9 +99,9 @@ const abcPage = () => {
             </div>
 
             <Card className="p-0 overflow-hidden">
-                <Table 
-                    columns={columns} 
-                    data={data} 
+                <Table
+                    columns={columns}
+                    data={data}
                     loading={loading}
                     onEdit={handleOpenModal}
                     onDelete={handleDelete}
@@ -119,8 +119,8 @@ const abcPage = () => {
                         name="name"
                         value={formData.name.toString()}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        
-                        
+
+
                         required
                     />
                     <div className="flex justify-end gap-3 pt-4">
@@ -137,4 +137,4 @@ const abcPage = () => {
     );
 };
 
-export default abcPage;
+export default AbcPage;

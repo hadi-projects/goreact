@@ -8,6 +8,6 @@ type PaginationResponse struct {
 type PaginationMeta struct {
 	CurrentPage int   `json:"current_page"`
 	TotalPages  int   `json:"total_pages"`
-	TotalItems  int64 `json:"total_items"`
+	TotalData   int64 `json:"total_data"`
 	Limit       int   `json:"limit"`
 }

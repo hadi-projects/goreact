@@ -48,10 +48,12 @@ func (h *roleHandler) Create(c *gin.Context) {
 func (h *roleHandler) GetAll(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	search := c.DefaultQuery("search", "")
 
 	pagination := &dto.PaginationRequest{
-		Page:  page,
-		Limit: limit,
+		Page:   page,
+		Limit:  limit,
+		Search: search,
 	}
 
 	res, err := h.service.GetAll(pagination)
@@ -64,7 +66,7 @@ func (h *roleHandler) GetAll(c *gin.Context) {
 	meta := &response.PaginationMeta{
 		CurrentPage: res.Meta.CurrentPage,
 		TotalPages:  res.Meta.TotalPages,
-		TotalItems:  res.Meta.TotalItems,
+		TotalData:   res.Meta.TotalData,
 		Limit:       res.Meta.Limit,
 	}
 

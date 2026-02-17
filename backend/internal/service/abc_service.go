@@ -73,7 +73,7 @@ func (s *abcService) GetAll(pagination *dto.PaginationRequest) (*dto.PaginationR
 		Meta: dto.PaginationMeta{
 			CurrentPage: pagination.GetPage(),
 			TotalPages:  int(math.Ceil(float64(total) / float64(pagination.GetLimit()))),
-			TotalItems:  total,
+			TotalData:   total,
 			Limit:       pagination.GetLimit(),
 		},
 	}

@@ -41,7 +41,8 @@ func (r *abcRepository) FindAll(pagination *dto.PaginationRequest) ([]entity.Abc
 	}
 
 	offset := (pagination.GetPage() - 1) * pagination.GetLimit()
-	err := query.Limit(pagination.GetLimit()).
+	err := query.Order("id DESC").
+		Limit(pagination.GetLimit()).
 		Offset(offset).
 		Find(&entities).Error
 

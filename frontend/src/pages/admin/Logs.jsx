@@ -26,23 +26,6 @@ const Logs = () => {
 
     const allColumns = [
         {
-            header: 'Time',
-            accessor: 'time',
-            render: (row) => new Date(row.time).toLocaleString()
-        },
-        {
-            header: 'Type',
-            accessor: 'type',
-            render: (row) => (
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${row.type === 'auth' ? 'bg-blue-100 text-blue-800' :
-                    row.type === 'audit' ? 'bg-purple-100 text-purple-800' :
-                        'bg-gray-100 text-gray-800'
-                    }`}>
-                    {row.type.toUpperCase()}
-                </span>
-            )
-        },
-        {
             header: 'Level',
             accessor: 'level',
             render: (row) => (
@@ -54,9 +37,51 @@ const Logs = () => {
                 </span>
             )
         },
-        { header: 'Action', accessor: 'action' },
-        { header: 'Email', accessor: 'email' },
-        { header: 'Message', accessor: 'message' },
+        {
+            header: 'Action',
+            accessor: 'action',
+            render: (row) => (
+                <div className="truncate max-w-xs whitespace-nowrap overflow-hidden">
+                    {row.action}
+                </div>
+            )
+        },
+        {
+            header: 'Email',
+            accessor: 'email',
+            render: (row) => (
+                <div className="truncate max-w-xs whitespace-nowrap overflow-hidden">
+                    {row.email}
+                </div>
+            )
+        },
+        {
+            header: 'Message',
+            accessor: 'message',
+            render: (row) => (
+                <div className="truncate max-w-xs whitespace-nowrap overflow-hidden">
+                    {row.message}
+                </div>
+            )
+        },
+        {
+            header: 'Time',
+            accessor: 'time',
+            render: (row) => {
+                const date = new Date(row.time);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = String(date.getFullYear()).slice(-2);
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
+                return (
+                    <div className="whitespace-nowrap">
+                        {`${day}/${month}/${year} ${hours}:${minutes}:${seconds}`}
+                    </div>
+                );
+            }
+        },
         {
             header: 'Actions',
             accessor: 'id',
@@ -75,7 +100,7 @@ const Logs = () => {
     ];
 
     const columns = logType === 'system'
-        ? allColumns.filter(col => ['type', 'level', 'message', 'id'].includes(col.accessor))
+        ? allColumns.filter(col => ['level', 'message', 'time', 'id'].includes(col.accessor))
         : allColumns;
 
     if (error) {
@@ -103,7 +128,7 @@ const Logs = () => {
             </div>
 
             <Card className="p-0 overflow-hidden border border-outline-variant/30 ring-1 ring-gray-200 bg-white/80 backdrop-blur-md">
-                <Table columns={columns} data={paginatedLogs} loading={isLoading} />
+                <Table columns={columns} data={paginatedLogs} loading={isLoading} hideEmptyState={true} />
                 {!isLoading && allLogs.length > 0 && (
                     <Pagination
                         currentPage={currentPage}

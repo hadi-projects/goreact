@@ -119,7 +119,7 @@ func (g *Generator) Generate() error {
 		"service_test.go.tmpl": filepath.Join(g.BaseDir, "internal/service", strings.ToLower(g.Config.ModuleName)+"_service_test.go"),
 		// Frontend UI templates
 		"frontend_api.js.tmpl":   filepath.Join(g.BaseDir, "../frontend/src/api", strings.ToLower(g.Config.ModuleName)+".js"),
-		"frontend_page.jsx.tmpl": filepath.Join(g.BaseDir, "../frontend/src/pages/admin", g.Config.ModuleName+"Page.jsx"),
+		"frontend_page.jsx.tmpl": filepath.Join(g.BaseDir, "../frontend/src/pages/admin", ToCamelCase(g.Config.ModuleName)+"Page.jsx"),
 	}
 
 	data := map[string]interface{}{
@@ -208,8 +208,8 @@ func (g *Generator) registerFrontend() error {
 	sidebarPath := filepath.Join(g.BaseDir, "../frontend/src/layouts/AdminLayout.jsx")
 
 	// Inject Route
-	routeImport := fmt.Sprintf("import %sPage from './pages/admin/%sPage';\n// [GENERATOR_INSERT_IMPORT]", g.Config.ModuleName, g.Config.ModuleName)
-	routeDefinition := fmt.Sprintf("\t\t\t\t\t<Route path=\"admin/%s\" element={<%sPage />} />\n\t\t\t\t\t// [GENERATOR_INSERT_ROUTE]", strings.ToLower(g.Config.ModuleName), g.Config.ModuleName)
+	routeImport := fmt.Sprintf("import %sPage from './pages/admin/%sPage';\n// [GENERATOR_INSERT_IMPORT]", ToCamelCase(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName))
+	routeDefinition := fmt.Sprintf("\t\t\t\t\t<Route path=\"admin/%s\" element={<%sPage />} />\n\t\t\t\t\t// [GENERATOR_INSERT_ROUTE]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName))
 
 	if err := g.insertAtMarker(appPath, "// [GENERATOR_INSERT_IMPORT]", routeImport); err != nil {
 		return err
@@ -224,7 +224,7 @@ func (g *Generator) registerFrontend() error {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                     </svg>
                                 ) },
-                                // [GENERATOR_INSERT_ADMIN_ITEM]`, g.Config.ModuleName, strings.ToLower(g.Config.ModuleName))
+                                // [GENERATOR_INSERT_ADMIN_ITEM]`, ToCamelCase(g.Config.ModuleName), strings.ToLower(g.Config.ModuleName))
 
 	if err := g.insertAtMarker(sidebarPath, "// [GENERATOR_INSERT_ADMIN_ITEM]", sidebarItem); err != nil {
 		return err

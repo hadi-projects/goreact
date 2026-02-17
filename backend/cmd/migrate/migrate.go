@@ -23,6 +23,11 @@ func main() {
 		&entity.Role{},
 		&entity.Permission{},
 		&entity.Abc{},
+				&entity.xyz{},
+				&entity.nina{},
+				&entity.sdsdsd{},
+				&entity.akusaja{},
+				&entity.Makan{},
 		// [GENERATOR_INSERT_MIGRATION]
 	)
 

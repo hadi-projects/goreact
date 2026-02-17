@@ -61,7 +61,7 @@ func (s *permissionService) Create(req dto.CreatePermissionRequest) (*dto.Permis
 
 func (s *permissionService) GetAll(pagination *dto.PaginationRequest) (*dto.PaginationResponse, error) {
 	// Try cache first
-	cacheKey := fmt.Sprintf("permissions:page:%d:limit:%d", pagination.GetPage(), pagination.GetLimit())
+	cacheKey := fmt.Sprintf("permissions:page:%d:limit:%d:search:%s", pagination.GetPage(), pagination.GetLimit(), pagination.Search)
 	var cached dto.PaginationResponse
 	if err := s.cache.Get(cacheKey, &cached); err == nil {
 		return &cached, nil
@@ -88,7 +88,7 @@ func (s *permissionService) GetAll(pagination *dto.PaginationRequest) (*dto.Pagi
 		Meta: dto.PaginationMeta{
 			CurrentPage: pagination.GetPage(),
 			TotalPages:  int(math.Ceil(float64(total) / float64(pagination.GetLimit()))),
-			TotalItems:  total,
+			TotalData:   total,
 			Limit:       pagination.GetLimit(),
 		},
 	}

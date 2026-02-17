@@ -44,7 +44,8 @@ func (r *userRepository) FindAll(pagination *dto.PaginationRequest) ([]entity.Us
 	}
 
 	offset := (pagination.GetPage() - 1) * pagination.GetLimit()
-	err := query.Preload("Role").
+	err := query.Order("id DESC").
+		Preload("Role").
 		Limit(pagination.GetLimit()).
 		Offset(offset).
 		Find(&users).Error

@@ -80,7 +80,7 @@ func (s *UserHandlerTestSuite) TestGetAll_Success() {
 		Meta: dto.PaginationMeta{
 			CurrentPage: 1,
 			TotalPages:  1,
-			TotalItems:  1,
+			TotalData:   1,
 			Limit:       10,
 		},
 	}

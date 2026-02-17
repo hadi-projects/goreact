@@ -42,7 +42,8 @@ func (r *permissionRepository) FindAll(pagination *dto.PaginationRequest) ([]ent
 	}
 
 	offset := (pagination.GetPage() - 1) * pagination.GetLimit()
-	err := query.Limit(pagination.GetLimit()).
+	err := query.Order("id DESC").
+		Limit(pagination.GetLimit()).
 		Offset(offset).
 		Find(&permissions).Error
 
