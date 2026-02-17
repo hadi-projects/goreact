@@ -25,8 +25,10 @@ var defaultRoles = []RolePermission{
 	{Role: "admin", Permission: "edit-permission"},
 	{Role: "admin", Permission: "get-permission"},
 	{Role: "admin", Permission: "manage-cache"},
+	{Role: "admin", Permission: "get-all-logs"},
 	{Role: "auditor", Permission: "get-audit-log"},
 	{Role: "auditor", Permission: "get-auth-log"},
+	{Role: "auditor", Permission: "get-own-logs"},
 	{Role: "user", Permission: "get-profile"}, // Basic user role
 }
 

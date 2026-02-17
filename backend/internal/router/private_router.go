@@ -12,12 +12,20 @@ func (r *Router) setupPrivateRoutes(
 	userHandler handler.UserHandler,
 	permissionHandler handler.PermissionHandler,
 	roleHandler handler.RoleHandler,
+	logHandler handler.LogHandler,
 	cacheHandler handler.CacheHandler,
 ) {
 	auth := v1.Group("/auth")
 	{
 		auth.POST("/login", authHandler.Login)
 		auth.POST("/register", userHandler.Register)
+	}
+
+	logs := v1.Group("/logs")
+	logs.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
+	{
+		// Internal permission check is handled inside GetLogs
+		logs.GET("", logHandler.GetLogs)
 	}
 
 	users := v1.Group("/users")

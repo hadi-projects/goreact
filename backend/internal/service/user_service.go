@@ -11,6 +11,7 @@ import (
 	"github.com/hadi-projects/go-react-starter/internal/entity"
 	"github.com/hadi-projects/go-react-starter/internal/repository"
 	"github.com/hadi-projects/go-react-starter/pkg/cache"
+	"github.com/hadi-projects/go-react-starter/pkg/logger"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -69,6 +70,12 @@ func (s *userService) Register(req dto.RegisterRequest) (*dto.UserResponse, erro
 	// Invalidate users list cache
 	s.cache.DeletePattern("users:*")
 
+	logger.AuditLogger.Info().
+		Uint("user_id", user.ID).
+		Str("email", user.Email).
+		Str("action", "user_registration").
+		Msg("user registered successfully")
+
 	return &dto.UserResponse{
 		ID:        user.ID,
 		Name:      user.Name,
@@ -103,6 +110,12 @@ func (s *userService) CreateUser(req dto.CreateUserRequest) (*dto.UserResponse, 
 
 	// Invalidate users list cache
 	s.cache.DeletePattern("users:*")
+
+	logger.AuditLogger.Info().
+		Uint("user_id", user.ID).
+		Str("email", user.Email).
+		Str("action", "user_creation").
+		Msg("user created by admin")
 
 	return &dto.UserResponse{
 		ID:        user.ID,
@@ -216,6 +229,12 @@ func (s *userService) Update(id uint, req dto.UpdateUserRequest) (*dto.UserRespo
 	s.cache.Delete(fmt.Sprintf("user:%d", id))
 	s.cache.DeletePattern("users:*")
 
+	logger.AuditLogger.Info().
+		Uint("user_id", user.ID).
+		Str("email", user.Email).
+		Str("action", "user_update").
+		Msg("user details updated")
+
 	return &dto.UserResponse{
 		ID:        user.ID,
 		Name:      user.Name,
@@ -230,6 +249,11 @@ func (s *userService) Delete(id uint) error {
 	// Invalidate user cache and users list cache
 	s.cache.Delete(fmt.Sprintf("user:%d", id))
 	s.cache.DeletePattern("users:*")
+
+	logger.AuditLogger.Info().
+		Uint("target_user_id", id).
+		Str("action", "user_deletion").
+		Msg("user deleted")
 
 	return s.userRepo.Delete(id)
 }

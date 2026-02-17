@@ -9,6 +9,7 @@ import (
 	"github.com/hadi-projects/go-react-starter/internal/entity"
 	"github.com/hadi-projects/go-react-starter/internal/repository"
 	"github.com/hadi-projects/go-react-starter/pkg/cache"
+	"github.com/hadi-projects/go-react-starter/pkg/logger"
 )
 
 type PermissionService interface {
@@ -42,6 +43,12 @@ func (s *permissionService) Create(req dto.CreatePermissionRequest) (*dto.Permis
 
 	// Invalidate permissions list cache
 	s.cache.DeletePattern("permissions:*")
+
+	logger.AuditLogger.Info().
+		Uint("permission_id", permission.ID).
+		Str("name", permission.Name).
+		Str("action", "permission_creation").
+		Msg("permission created")
 
 	return &dto.PermissionResponse{
 		ID:          permission.ID,
@@ -108,6 +115,12 @@ func (s *permissionService) Update(id uint, req dto.UpdatePermissionRequest) (*d
 	// Invalidate permissions list cache
 	s.cache.DeletePattern("permissions:*")
 
+	logger.AuditLogger.Info().
+		Uint("permission_id", permission.ID).
+		Str("name", permission.Name).
+		Str("action", "permission_update").
+		Msg("permission updated")
+
 	return &dto.PermissionResponse{
 		ID:          permission.ID,
 		Name:        permission.Name,
@@ -120,6 +133,11 @@ func (s *permissionService) Update(id uint, req dto.UpdatePermissionRequest) (*d
 func (s *permissionService) Delete(id uint) error {
 	// Invalidate permissions list cache
 	s.cache.DeletePattern("permissions:*")
+
+	logger.AuditLogger.Info().
+		Uint("target_permission_id", id).
+		Str("action", "permission_deletion").
+		Msg("permission deleted")
 
 	return s.repo.Delete(id)
 }

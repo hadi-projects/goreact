@@ -9,6 +9,7 @@ import (
 	"github.com/hadi-projects/go-react-starter/internal/entity"
 	"github.com/hadi-projects/go-react-starter/internal/repository"
 	"github.com/hadi-projects/go-react-starter/pkg/cache"
+	"github.com/hadi-projects/go-react-starter/pkg/logger"
 )
 
 type RoleService interface {
@@ -43,6 +44,12 @@ func (s *roleService) Create(req dto.CreateRoleRequest) (*dto.RoleResponse, erro
 
 	// Invalidate roles list cache
 	s.cache.DeletePattern("roles:*")
+
+	logger.AuditLogger.Info().
+		Uint("role_id", role.ID).
+		Str("name", role.Name).
+		Str("action", "role_creation").
+		Msg("role created")
 
 	// Fetch again to get permissions populated (or we can construct response manually if we trust repo)
 	// Better to fetch to be sure.
@@ -133,6 +140,12 @@ func (s *roleService) Update(id uint, req dto.UpdateRoleRequest) (*dto.RoleRespo
 	s.cache.Delete(fmt.Sprintf("role:%d", id))
 	s.cache.DeletePattern("roles:*")
 
+	logger.AuditLogger.Info().
+		Uint("role_id", role.ID).
+		Str("name", role.Name).
+		Str("action", "role_update").
+		Msg("role updated")
+
 	updatedRole, err := s.roleRepo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -145,6 +158,11 @@ func (s *roleService) Delete(id uint) error {
 	// Invalidate role cache and roles list cache
 	s.cache.Delete(fmt.Sprintf("role:%d", id))
 	s.cache.DeletePattern("roles:*")
+
+	logger.AuditLogger.Info().
+		Uint("target_role_id", id).
+		Str("action", "role_deletion").
+		Msg("role deleted")
 
 	return s.roleRepo.Delete(id)
 }
