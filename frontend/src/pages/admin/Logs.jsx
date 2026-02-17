@@ -10,7 +10,7 @@ import logApi from '../../api/log';
 const Logs = () => {
     const { type: logType } = useParams();
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [selectedLog, setSelectedLog] = useState(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
@@ -136,6 +136,10 @@ const Logs = () => {
                         totalItems={totalItems}
                         itemsPerPage={itemsPerPage}
                         onPageChange={setCurrentPage}
+                        onLimitChange={(newLimit) => {
+                            setItemsPerPage(newLimit);
+                            setCurrentPage(1);
+                        }}
                     />
                 )}
                 {!isLoading && allLogs.length === 0 && (

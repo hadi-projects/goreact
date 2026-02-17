@@ -12,7 +12,7 @@ import { getRoles, createRole, updateRole, deleteRole } from '../../api/admin';
 const Roles = () => {
     const queryClient = useQueryClient();
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -187,6 +187,10 @@ const Roles = () => {
                         totalItems={meta.total_data}
                         itemsPerPage={itemsPerPage}
                         onPageChange={setCurrentPage}
+                        onLimitChange={(newLimit) => {
+                            setItemsPerPage(newLimit);
+                            setCurrentPage(1);
+                        }}
                     />
                 )}
             </Card>
