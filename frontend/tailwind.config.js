@@ -55,6 +55,12 @@ export default {
           DEFAULT: '#79747E',
           variant: '#CAC4D0',
         },
+        error: {
+          DEFAULT: '#B3261E',
+          'on': '#FFFFFF',
+          container: '#F9DEDC',
+          'on-container': '#410E0B',
+        },
       },
       fontSize: {
         // MD3 Typography Scale - Refined (smaller)

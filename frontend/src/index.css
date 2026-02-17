@@ -79,10 +79,10 @@
   /* MD3 Text Field - Expressive */
   .text-field {
     background-color: theme('colors.surface.container-high');
-    border-bottom: 2px solid theme('colors.outline-variant');
+    border: 1px solid theme('colors.outline.DEFAULT');
     color: theme('colors.surface.on');
-    @apply w-full px-4 py-3 rounded-md3-sm;
-    @apply focus:border-primary-500;
+    @apply w-full px-4 py-3 rounded-xl;
+    @apply focus:border-primary-500 focus:ring-1 focus:ring-primary-500;
     @apply text-sm;
 
     &::placeholder {
@@ -91,6 +91,30 @@
     }
 
     @apply focus:outline-none transition-all duration-300;
+  }
+
+  .text-field-label {
+    @apply block text-sm font-medium text-surface-on mb-1.5 px-1;
+  }
+
+  .text-field-error {
+    border-color: theme('colors.error.DEFAULT') !important;
+  }
+
+  .text-field-error:focus,
+  .text-field-error:focus-within {
+    border-color: theme('colors.error.DEFAULT') !important;
+    outline: none !important;
+    box-shadow: 0 0 0 1px theme('colors.error.DEFAULT') !important;
+  }
+
+  .text-field-error-message {
+    color: theme('colors.error.DEFAULT');
+    @apply text-xs mt-1.5 px-1 font-medium;
+  }
+
+  .text-field-helper {
+    @apply text-xs text-surface-on-variant mt-1.5 px-1;
   }
 
   /* Navigation Specifics */
