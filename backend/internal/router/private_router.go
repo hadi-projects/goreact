@@ -2,8 +2,10 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	customHandler "github.com/hadi-projects/go-react-starter/internal/handler"
 	handler "github.com/hadi-projects/go-react-starter/internal/handler/default"
 	"github.com/hadi-projects/go-react-starter/internal/middleware"
+	// [GENERATOR_INSERT_IMPORT]
 )
 
 func (r *Router) setupPrivateRoutes(
@@ -16,6 +18,8 @@ func (r *Router) setupPrivateRoutes(
 	cacheHandler handler.CacheHandler,
 	statisticsHandler handler.StatisticsHandler,
 	generatorHandler handler.GeneratorHandler,
+	testtHandler customHandler.TesttHandler,
+	popoHandler customHandler.PopoHandler,
 	// [GENERATOR_INSERT_HANDLER_PARAM]
 ) {
 	// Module Generator
@@ -23,6 +27,24 @@ func (r *Router) setupPrivateRoutes(
 	generator.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
 	{
 		generator.POST("", middleware.PermissionGuard("create-module"), generatorHandler.Generate)
+	}
+	testt := v1.Group("/testt")
+	testt.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
+	{
+		testt.POST("", testtHandler.Create)
+		testt.GET("", testtHandler.GetAll)
+		testt.GET("/:id", testtHandler.GetByID)
+		testt.PUT("/:id", testtHandler.Update)
+		testt.DELETE("/:id", testtHandler.Delete)
+	}
+		popo := v1.Group("/popo")
+	popo.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
+	{
+		popo.POST("", popoHandler.Create)
+		popo.GET("", popoHandler.GetAll)
+		popo.GET("/:id", popoHandler.GetByID)
+		popo.PUT("/:id", popoHandler.Update)
+		popo.DELETE("/:id", popoHandler.Delete)
 	}
 	// [GENERATOR_INSERT_GROUP]
 	auth := v1.Group("/auth")

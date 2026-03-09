@@ -194,10 +194,13 @@ func (g *Generator) registerRouter() error {
 	routerPath := filepath.Join(g.BaseDir, "internal/router/router.go")
 	privateRouterPath := filepath.Join(g.BaseDir, "internal/router/private_router.go")
 
-	repoInit := fmt.Sprintf("\t%sRepo := customRepository.New%sRepository(db)\n\t// [GENERATOR_INSERT_REPOSITORY]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName))
-	serviceInit := fmt.Sprintf("\t%sService := customService.New%sService(%sRepo, r.cache)\n\t// [GENERATOR_INSERT_SERVICE]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName), strings.ToLower(g.Config.ModuleName))
-	handlerInit := fmt.Sprintf("\t%sHandler := customHandler.New%sHandler(%sService)\n\t// [GENERATOR_INSERT_HANDLER]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName), strings.ToLower(g.Config.ModuleName))
-	handlerParam := fmt.Sprintf("\t\t\t%sHandler,\n\t\t\t// [GENERATOR_INSERT_HANDLER_PARAM]", strings.ToLower(g.Config.ModuleName))
+	// Insertions into router.go – note: marker line already has its own leading \t,
+	// so content strings must NOT add an extra leading \t.
+	repoInit := fmt.Sprintf("%sRepo := customRepository.New%sRepository(db)\n\t// [GENERATOR_INSERT_REPOSITORY]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName))
+	serviceInit := fmt.Sprintf("%sService := customService.New%sService(%sRepo, r.cache)\n\t// [GENERATOR_INSERT_SERVICE]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName), strings.ToLower(g.Config.ModuleName))
+	handlerInit := fmt.Sprintf("%sHandler := customHandler.New%sHandler(%sService)\n\t// [GENERATOR_INSERT_HANDLER]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName), strings.ToLower(g.Config.ModuleName))
+	// handlerParam inserts inside the multiline setupPrivateRoutes(\n\t\t\t// [MARKER]) block
+	handlerParam := fmt.Sprintf("%sHandler,\n\t\t\t// [GENERATOR_INSERT_HANDLER_PARAM]", strings.ToLower(g.Config.ModuleName))
 
 	if err := g.insertAtMarker(routerPath, "// [GENERATOR_INSERT_REPOSITORY]", repoInit); err != nil {
 		return err
@@ -212,7 +215,8 @@ func (g *Generator) registerRouter() error {
 		return err
 	}
 
-	handlerParamPrivate := fmt.Sprintf("\t%sHandler customHandler.%sHandler,\n\t// [GENERATOR_INSERT_HANDLER_PARAM]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName))
+	// Insertions into private_router.go
+	handlerParamPrivate := fmt.Sprintf("%sHandler customHandler.%sHandler,\n\t// [GENERATOR_INSERT_HANDLER_PARAM]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName))
 	groupInit := fmt.Sprintf(`	%s := v1.Group("/%s")
 	%s.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
 	{
@@ -236,10 +240,11 @@ func (g *Generator) registerRouter() error {
 
 func (g *Generator) registerMigration() error {
 	migratePath := filepath.Join(g.BaseDir, "cmd/migrate/migrate.go")
-	modulePkg := strings.ToLower(g.Config.ModuleName) + "Entity"
-	importAlias := fmt.Sprintf("\t%s \"github.com/hadi-projects/go-react-starter/internal/entity/%s\"\n\t// [GENERATOR_INSERT_IMPORT]", modulePkg, strings.ToLower(g.Config.ModuleName))
-	migrationInit := fmt.Sprintf("\t\t&%s.%s{},\n\t\t// [GENERATOR_INSERT_MIGRATION]", modulePkg, ToCamelCase(g.Config.ModuleName))
-	if err := g.insertAtMarker(migratePath, "// [GENERATOR_INSERT_IMPORT]", importAlias); err != nil {
+	// All generated entities live in internal/entity (one shared package).
+	// We inject the import once (idempotent via duplicate-check in insertAtMarker).
+	importLine := "customEntity \"github.com/hadi-projects/go-react-starter/internal/entity\"\n\t// [GENERATOR_INSERT_IMPORT]"
+	migrationInit := fmt.Sprintf("&customEntity.%s{},\n\t\t// [GENERATOR_INSERT_MIGRATION]", ToCamelCase(g.Config.ModuleName))
+	if err := g.insertAtMarker(migratePath, "// [GENERATOR_INSERT_IMPORT]", importLine); err != nil {
 		return err
 	}
 	return g.insertAtMarker(migratePath, "// [GENERATOR_INSERT_MIGRATION]", migrationInit)
