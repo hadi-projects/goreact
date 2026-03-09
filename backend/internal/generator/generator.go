@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -150,6 +151,42 @@ func (g *Generator) Generate() error {
 		fmt.Printf("Warning: Failed to register frontend: %v\n", err)
 	}
 
+	if err := g.generateMocks(); err != nil {
+		fmt.Printf("Warning: Failed to generate mocks: %v\n", err)
+	}
+
+	return nil
+}
+
+func (g *Generator) generateMocks() error {
+	repoPath := filepath.Join(g.BaseDir, "internal/repository", strings.ToLower(g.Config.ModuleName)+"_repository.go")
+	repoMockPath := filepath.Join(g.BaseDir, "internal/mock/repository", "mock_"+strings.ToLower(g.Config.ModuleName)+"_repository.go")
+	servicePath := filepath.Join(g.BaseDir, "internal/service", strings.ToLower(g.Config.ModuleName)+"_service.go")
+	serviceMockPath := filepath.Join(g.BaseDir, "internal/mock/service", "mock_"+strings.ToLower(g.Config.ModuleName)+"_service.go")
+
+	if err := os.MkdirAll(filepath.Dir(repoMockPath), 0755); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(serviceMockPath), 0755); err != nil {
+		return err
+	}
+
+	repoCmd := fmt.Sprintf("go run go.uber.org/mock/mockgen@latest -source=%s -destination=%s -package=mock_repository", repoPath, repoMockPath)
+	serviceCmd := fmt.Sprintf("go run go.uber.org/mock/mockgen@latest -source=%s -destination=%s -package=mock_service", servicePath, serviceMockPath)
+
+	fmt.Printf("Generating mocks for Repository and Service...\n")
+
+	// Execute the commands (usually they run on standard execution path in project root)
+	cmd := bytes.Buffer{}
+	cmd.WriteString(repoCmd + " && " + serviceCmd)
+
+	// Assuming generator runs in baseDir anyway, but better to use os/exec if it were standard bash execution
+	cmdExec := exec.Command("sh", "-c", cmd.String())
+	cmdExec.Dir = g.BaseDir
+	if err := cmdExec.Run(); err != nil {
+		fmt.Printf("Warning: Failed to execute mockgen: %v\n", err)
+	}
+
 	return nil
 }
 
@@ -157,10 +194,10 @@ func (g *Generator) registerRouter() error {
 	routerPath := filepath.Join(g.BaseDir, "internal/router/router.go")
 	privateRouterPath := filepath.Join(g.BaseDir, "internal/router/private_router.go")
 
-	repoInit := fmt.Sprintf("\t%sRepo := repository.New%sRepository(db)\n\t// [GENERATOR_INSERT_REPOSITORY]", strings.ToLower(g.Config.ModuleName), g.Config.ModuleName)
-	serviceInit := fmt.Sprintf("\t%sService := service.New%sService(%sRepo, r.cache)\n\t// [GENERATOR_INSERT_SERVICE]", strings.ToLower(g.Config.ModuleName), g.Config.ModuleName, strings.ToLower(g.Config.ModuleName))
-	handlerInit := fmt.Sprintf("\t%sHandler := handler.New%sHandler(%sService)\n\t// [GENERATOR_INSERT_HANDLER]", strings.ToLower(g.Config.ModuleName), g.Config.ModuleName, strings.ToLower(g.Config.ModuleName))
-	handlerParam := fmt.Sprintf("\t\t%sHandler,\n\t\t// [GENERATOR_INSERT_HANDLER_PARAM]", strings.ToLower(g.Config.ModuleName))
+	repoInit := fmt.Sprintf("\t%sRepo := customRepository.New%sRepository(db)\n\t// [GENERATOR_INSERT_REPOSITORY]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName))
+	serviceInit := fmt.Sprintf("\t%sService := customService.New%sService(%sRepo, r.cache)\n\t// [GENERATOR_INSERT_SERVICE]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName), strings.ToLower(g.Config.ModuleName))
+	handlerInit := fmt.Sprintf("\t%sHandler := customHandler.New%sHandler(%sService)\n\t// [GENERATOR_INSERT_HANDLER]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName), strings.ToLower(g.Config.ModuleName))
+	handlerParam := fmt.Sprintf("\t\t\t%sHandler,\n\t\t\t// [GENERATOR_INSERT_HANDLER_PARAM]", strings.ToLower(g.Config.ModuleName))
 
 	if err := g.insertAtMarker(routerPath, "// [GENERATOR_INSERT_REPOSITORY]", repoInit); err != nil {
 		return err
@@ -175,7 +212,7 @@ func (g *Generator) registerRouter() error {
 		return err
 	}
 
-	handlerParamPrivate := fmt.Sprintf("\t%sHandler handler.%sHandler,\n\t// [GENERATOR_INSERT_HANDLER_PARAM]", strings.ToLower(g.Config.ModuleName), g.Config.ModuleName)
+	handlerParamPrivate := fmt.Sprintf("\t%sHandler customHandler.%sHandler,\n\t// [GENERATOR_INSERT_HANDLER_PARAM]", strings.ToLower(g.Config.ModuleName), ToCamelCase(g.Config.ModuleName))
 	groupInit := fmt.Sprintf(`	%s := v1.Group("/%s")
 	%s.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
 	{
@@ -199,7 +236,12 @@ func (g *Generator) registerRouter() error {
 
 func (g *Generator) registerMigration() error {
 	migratePath := filepath.Join(g.BaseDir, "cmd/migrate/migrate.go")
-	migrationInit := fmt.Sprintf("\t\t&entity.%s{},\n\t\t// [GENERATOR_INSERT_MIGRATION]", g.Config.ModuleName)
+	modulePkg := strings.ToLower(g.Config.ModuleName) + "Entity"
+	importAlias := fmt.Sprintf("\t%s \"github.com/hadi-projects/go-react-starter/internal/entity/%s\"\n\t// [GENERATOR_INSERT_IMPORT]", modulePkg, strings.ToLower(g.Config.ModuleName))
+	migrationInit := fmt.Sprintf("\t\t&%s.%s{},\n\t\t// [GENERATOR_INSERT_MIGRATION]", modulePkg, ToCamelCase(g.Config.ModuleName))
+	if err := g.insertAtMarker(migratePath, "// [GENERATOR_INSERT_IMPORT]", importAlias); err != nil {
+		return err
+	}
 	return g.insertAtMarker(migratePath, "// [GENERATOR_INSERT_MIGRATION]", migrationInit)
 }
 

@@ -13,6 +13,11 @@ import Permissions from './pages/admin/Permissions'
 import Logs from './pages/admin/Logs'
 import GeneratorPage from './pages/admin/GeneratorPage'
 import { ThemeProvider } from './context/ThemeContext'
+import ApiPage from './pages/admin/ApiPage';
+import TesttPage from './pages/admin/TesttPage';
+import RrraPage from './pages/admin/RrraPage';
+import SamplePage from './pages/admin/SamplePage';
+import PoinPage from './pages/admin/PoinPage';
 // [GENERATOR_INSERT_IMPORT]
 
 function App() {
@@ -36,6 +41,11 @@ function App() {
           <Route path="admin/logs" element={<Navigate to="/admin/logs/all" replace />} />
           <Route path="admin/logs/:type" element={<Logs />} />
           <Route path="admin/generator" element={<GeneratorPage />} />
+										<Route path="admin/api" element={<ApiPage />} />
+										<Route path="admin/testt" element={<TesttPage />} />
+										<Route path="admin/rrra" element={<RrraPage />} />
+										<Route path="admin/sample" element={<SamplePage />} />
+										<Route path="admin/poin" element={<PoinPage />} />
 					// [GENERATOR_INSERT_ROUTE]
         </Route>
       </Routes>

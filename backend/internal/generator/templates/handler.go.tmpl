@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hadi-projects/go-react-starter/internal/dto"
+	defaultdto "github.com/hadi-projects/go-react-starter/internal/dto/default"
 	"github.com/hadi-projects/go-react-starter/internal/service"
 	"github.com/hadi-projects/go-react-starter/pkg/response"
 )
@@ -43,7 +44,7 @@ func (h *{{.ModuleNameLower}}Handler) Create(c *gin.Context) {
 }
 
 func (h *{{.ModuleNameLower}}Handler) GetAll(c *gin.Context) {
-	var pagination dto.PaginationRequest
+	var pagination defaultdto.PaginationRequest
 	if err := c.ShouldBindQuery(&pagination); err != nil {
 		response.Error(c, http.StatusBadRequest, err.Error())
 		return
