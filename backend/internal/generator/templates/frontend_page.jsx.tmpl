@@ -6,6 +6,7 @@ import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
 import TextField from '../../components/TextField';
+import usePermission from '../../hooks/usePermission';
 import { 
     getAll{{.ModuleName}}s, 
     create{{.ModuleName}}, 
@@ -14,6 +15,7 @@ import {
 } from '../../api/{{.ModuleNameLowerCamel}}';
 
 const {{.ModuleName}}Page = () => {
+    const can = usePermission();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -100,6 +102,11 @@ const {{.ModuleName}}Page = () => {
         }
     };
 
+    const tableActions = [
+        ...(can('update-{{.TableName}}') ? [{ label: 'Edit', onClick: handleOpenModal }] : []),
+        ...(can('delete-{{.TableName}}') ? [{ label: 'Delete', onClick: (row) => handleDelete(row.id), className: 'text-error' }] : []),
+    ];
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -107,9 +114,11 @@ const {{.ModuleName}}Page = () => {
                     <h1 className="text-2xl font-bold text-surface-on tracking-tight">{{.ModuleName}} Management</h1>
                     <p className="text-sm text-surface-on-variant mt-1">Manage your {{.ModuleNameLower}} instances.</p>
                 </div>
-                <Button variant="primary" onClick={() => handleOpenModal()}>
-                    Add {{.ModuleName}}
-                </Button>
+                {can('create-{{.TableName}}') && (
+                    <Button variant="primary" onClick={() => handleOpenModal()}>
+                        Add {{.ModuleName}}
+                    </Button>
+                )}
             </div>
 
             <Card className="p-0 overflow-hidden">
@@ -117,10 +126,7 @@ const {{.ModuleName}}Page = () => {
                     columns={columns} 
                     data={data} 
                     loading={loading}
-                    actions={[
-                        { label: 'Edit', onClick: handleOpenModal },
-                        { label: 'Delete', onClick: (row) => handleDelete(row.id), className: 'text-error' },
-                    ]}
+                    actions={tableActions}
                 />
                 {!loading && data.length > 0 && (
                     <Pagination

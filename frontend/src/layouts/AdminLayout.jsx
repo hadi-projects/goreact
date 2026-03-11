@@ -11,6 +11,17 @@ const AdminLayout = () => {
     const location = useLocation();
     const [user, setUser] = useState(null);
     const [cacheStatus, setCacheStatus] = useState('unknown'); // unknown, connected, disconnected
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+    // Auto-collapse sidebar on small screens
+    useEffect(() => {
+        const handleResize = () => {
+            setSidebarCollapsed(window.innerWidth < 1024);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -27,14 +38,9 @@ const AdminLayout = () => {
 
         // Fetch cache status only if user has manage-cache permission
         const fetchCacheStatus = async () => {
-            // Check if user data is loaded and has the permission
             if (!userData) return;
-
             const parsedUser = JSON.parse(userData);
-            if (!parsedUser.permissions?.includes('manage-cache')) {
-                return; // Skip fetching if no permission
-            }
-
+            if (!parsedUser.permissions?.includes('manage-cache')) return;
             try {
                 const response = await getCacheStatus();
                 setCacheStatus(response.data);
@@ -46,7 +52,7 @@ const AdminLayout = () => {
 
         fetchCacheStatus();
 
-        // Optional: Poll every 30 seconds (only if user has permission)
+        // Poll every 30 seconds (only if user has permission)
         if (userData) {
             const parsedUser = JSON.parse(userData);
             if (parsedUser.permissions?.includes('manage-cache')) {
@@ -96,18 +102,20 @@ const AdminLayout = () => {
                 },
                 { path: '/admin/generator', label: 'Module Generator', permission: 'create-module', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg> },
                 {
-                    label: 'Testsaja', path: '/admin/testsaja', icon: (
+                    label: 'Testsaja', path: '/admin/testsaja', permission: 'get-testsaja', icon: (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
                     )
                 },
-                                                { label: 'Produk', path: '/admin/produk', icon: (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                    </svg>
-                                ) },
-                                // [GENERATOR_INSERT_ADMIN_ITEM]
+                {
+                    label: 'Produk', path: '/admin/produk', permission: 'get-produk', icon: (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                    )
+                },
+                // [GENERATOR_INSERT_ADMIN_ITEM]
             ]
         }
     ];
@@ -117,47 +125,21 @@ const AdminLayout = () => {
         if (!user || user.role_id === 1) return navigationSections; // Admin full access (fallback check on role_id)
 
         const checkPermission = (item) => {
-            // If no permission requirements, item is visible
             if (!item.permission) return true;
-
-            // If no permissions on user object yet, hide restricted items (or logic based on requirement)
             if (!user.permissions) return false;
-
-            // Handle string permission (single)
-            if (typeof item.permission === 'string') {
-                return user.permissions.includes(item.permission);
-            }
-            // Handle array permission (multiple - OR logic: user has ANY of them)
-            if (Array.isArray(item.permission)) {
-                return item.permission.some(p => user.permissions.includes(p));
-            }
+            if (typeof item.permission === 'string') return user.permissions.includes(item.permission);
+            if (Array.isArray(item.permission)) return item.permission.some(p => user.permissions.includes(p));
             return false;
         };
 
         const filterItems = (items) => {
             return items.map(item => {
-                // If it has subItems, filter them first
                 if (item.subItems) {
                     const filteredSubItems = filterItems(item.subItems);
-                    // Only show parent if it has visible children OR if parent itself has permission
-                    // Logic choice: Show parent if ANY child is visible OR if parent matches permission requirements (if set)
-                    // Better logic: Filter children. If children exist after filter, show parent.
-                    // If permissions are set on parent, check them too.
-
-                    const hasVisibleChildren = filteredSubItems.length > 0;
-                    const canViewParent = checkPermission(item);
-
-                    if (hasVisibleChildren) {
-                        return { ...item, subItems: filteredSubItems };
-                    }
-                    // If no children visible, but parent has permission (e.g. direct link disguised as group?), show it (rare case here)
-                    // But here parent is just container. So if no children, hide parent.
-                    return null;
+                    return filteredSubItems.length > 0 ? { ...item, subItems: filteredSubItems } : null;
                 }
-
-                // If it's a leaf item
                 return checkPermission(item) ? item : null;
-            }).filter(Boolean); // Remove nulls
+            }).filter(Boolean);
         };
 
         return navigationSections.map(section => ({
@@ -178,7 +160,12 @@ const AdminLayout = () => {
     return (
         <div className="flex h-screen bg-surface overflow-hidden">
             {/* Sidebar Navigation */}
-            <Sidebar sections={filteredNavigation} onLogout={handleLogout} />
+            <Sidebar
+                sections={filteredNavigation}
+                onLogout={handleLogout}
+                collapsed={sidebarCollapsed}
+                onToggleCollapse={() => setSidebarCollapsed(v => !v)}
+            />
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0 bg-surface-container-low relative">

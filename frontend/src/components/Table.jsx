@@ -137,7 +137,7 @@ const Table = ({ columns, data, loading = false, hideEmptyState = false, actions
     }
 
     return (
-        <div className="w-full overflow-x-auto bg-surface-container rounded-md3-lg border border-outline-variant/30 transition-colors duration-300">
+        <div className="w-full overflow-x-auto bg-surface-container border border-outline-variant/30 transition-colors duration-300">
             <table className="w-full">
                 <thead className="bg-surface-variant border-b border-outline-variant/30">
                     <tr>

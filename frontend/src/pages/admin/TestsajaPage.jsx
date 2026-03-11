@@ -6,6 +6,7 @@ import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
 import TextField from '../../components/TextField';
+import usePermission from '../../hooks/usePermission';
 import {
     getAllTestsajas,
     createTestsaja,
@@ -14,6 +15,7 @@ import {
 } from '../../api/testsaja';
 
 const TestsajaPage = () => {
+    const can = usePermission();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -92,6 +94,11 @@ const TestsajaPage = () => {
         }
     };
 
+    const tableActions = [
+        ...(can('update-testsaja') ? [{ label: 'Edit', onClick: handleOpenModal }] : []),
+        ...(can('delete-testsaja') ? [{ label: 'Delete', onClick: (row) => handleDelete(row.id), className: 'text-error' }] : []),
+    ];
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -99,9 +106,11 @@ const TestsajaPage = () => {
                     <h1 className="text-2xl font-bold text-surface-on tracking-tight">Testsaja Management</h1>
                     <p className="text-sm text-surface-on-variant mt-1">Manage your testsaja instances.</p>
                 </div>
-                <Button variant="primary" onClick={() => handleOpenModal()}>
-                    Add Testsaja
-                </Button>
+                {can('create-testsaja') && (
+                    <Button variant="primary" onClick={() => handleOpenModal()}>
+                        Add Testsaja
+                    </Button>
+                )}
             </div>
 
             <Card className="p-0 overflow-hidden">
@@ -109,10 +118,7 @@ const TestsajaPage = () => {
                     columns={columns}
                     data={data}
                     loading={loading}
-                    actions={[
-                        { label: 'Edit', onClick: handleOpenModal },
-                        { label: 'Delete', onClick: (row) => handleDelete(row.id), className: 'text-error' },
-                    ]}
+                    actions={tableActions}
                 />
                 {!loading && data.length > 0 && (
                     <Pagination

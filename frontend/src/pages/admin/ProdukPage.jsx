@@ -6,6 +6,7 @@ import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import Pagination from '../../components/Pagination';
 import TextField from '../../components/TextField';
+import usePermission from '../../hooks/usePermission';
 import {
     getAllProduks,
     createProduk,
@@ -14,6 +15,7 @@ import {
 } from '../../api/produk';
 
 const ProdukPage = () => {
+    const can = usePermission();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -96,6 +98,11 @@ const ProdukPage = () => {
         }
     };
 
+    const tableActions = [
+        ...(can('update-produk') ? [{ label: 'Edit', onClick: handleOpenModal }] : []),
+        ...(can('delete-produk') ? [{ label: 'Delete', onClick: (row) => handleDelete(row.id), className: 'text-error' }] : []),
+    ];
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -103,9 +110,11 @@ const ProdukPage = () => {
                     <h1 className="text-2xl font-bold text-surface-on tracking-tight">Produk Management</h1>
                     <p className="text-sm text-surface-on-variant mt-1">Manage your produk instances.</p>
                 </div>
-                <Button variant="primary" onClick={() => handleOpenModal()}>
-                    Add Produk
-                </Button>
+                {can('create-produk') && (
+                    <Button variant="primary" onClick={() => handleOpenModal()}>
+                        Add Produk
+                    </Button>
+                )}
             </div>
 
             <Card className="p-0 overflow-hidden">
@@ -113,10 +122,7 @@ const ProdukPage = () => {
                     columns={columns}
                     data={data}
                     loading={loading}
-                    actions={[
-                        { label: 'Edit', onClick: handleOpenModal },
-                        { label: 'Delete', onClick: (row) => handleDelete(row.id), className: 'text-error' },
-                    ]}
+                    actions={tableActions}
                 />
                 {!loading && data.length > 0 && (
                     <Pagination
