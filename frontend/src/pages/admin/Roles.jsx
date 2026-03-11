@@ -98,31 +98,6 @@ const Roles = () => {
         { header: 'ID', accessor: 'id' },
         { header: 'Name', accessor: 'name' },
         { header: 'Description', accessor: 'description' },
-        {
-            header: 'Actions',
-            render: (row) => (
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => handleEditRole(row)}
-                        className="text-primary hover:bg-primary-container/20 p-1 rounded transition-colors"
-                        title="Edit Role"
-                    >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </button>
-                    <button
-                        onClick={() => handleDeleteRole(row)}
-                        className="text-error hover:bg-error-container/20 p-1 rounded transition-colors"
-                        title="Delete Role"
-                    >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
-                </div>
-            ),
-        }
     ];
 
     if (error) {
@@ -179,7 +154,10 @@ const Roles = () => {
             </div>
 
             <Card className="p-0 overflow-hidden border border-outline-variant">
-                <Table columns={columns} data={filteredRoles} loading={isLoading} />
+                <Table columns={columns} data={filteredRoles} loading={isLoading} actions={[
+                    { label: 'Edit', onClick: handleEditRole },
+                    { label: 'Delete', onClick: handleDeleteRole, className: 'text-error' },
+                ]} />
                 {!isLoading && roles.length > 0 && (
                     <Pagination
                         currentPage={currentPage}

@@ -107,25 +107,6 @@ const Users = () => {
             header: 'Created At',
             render: (row) => new Date(row.created_at).toLocaleDateString(),
         },
-        {
-            header: 'Actions',
-            render: (row) => (
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => openEditModal(row)}
-                        className="px-3 py-1 text-sm text-primary border border-primary/50 rounded-md3-sm hover:bg-primary-container/20 transition-colors"
-                    >
-                        Edit
-                    </button>
-                    <button
-                        onClick={() => openDeleteDialog(row)}
-                        className="px-3 py-1 text-sm text-error border border-error/50 rounded-md3-sm hover:bg-error-container/20 transition-colors"
-                    >
-                        Delete
-                    </button>
-                </div>
-            ),
-        },
     ];
 
     if (error) {
@@ -173,7 +154,10 @@ const Users = () => {
             </div>
 
             <Card className="p-0 overflow-hidden">
-                <Table columns={columns} data={users} loading={isLoading} />
+                <Table columns={columns} data={users} loading={isLoading} actions={[
+                    { label: 'Edit', onClick: openEditModal },
+                    { label: 'Delete', onClick: openDeleteDialog, className: 'text-error' },
+                ]} />
                 {!isLoading && users.length > 0 && (
                     <Pagination
                         currentPage={currentPage}

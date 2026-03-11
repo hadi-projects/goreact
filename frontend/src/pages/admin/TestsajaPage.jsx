@@ -4,6 +4,7 @@ import Button from '../../components/Button';
 import Card from '../../components/Card';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import Pagination from '../../components/Pagination';
 import TextField from '../../components/TextField';
 import {
     getAllTestsajas,
@@ -17,30 +18,35 @@ const TestsajaPage = () => {
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [paginationMeta, setPaginationMeta] = useState({ total_data: 0, total_pages: 1 });
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [formData, setFormData] = useState({
         name: '',
     });
 
     const columns = [
+        { header: 'ID', accessor: 'id' },
         { header: 'Name', accessor: 'name' },
         { header: 'Created At', accessor: 'created_at', render: (row) => new Date(row.created_at).toLocaleString() },
     ];
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const res = await getAllTestsajas();
-            setData(res.data?.data || []);
-        } catch (err) {
-            toast.error('Failed to fetch data');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const res = await getAllTestsajas({ page: currentPage, limit: itemsPerPage });
+                setData(res.data?.data || []);
+                setPaginationMeta(res.data?.meta || { total_data: 0, total_pages: 1 });
+            } catch (err) {
+                toast.error('Failed to fetch data');
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchData();
-    }, []);
+    }, [currentPage, itemsPerPage, refreshTrigger]);
 
     const handleOpenModal = (item = null) => {
         if (item) {
@@ -68,7 +74,7 @@ const TestsajaPage = () => {
                 toast.success('Created successfully');
             }
             setIsModalOpen(false);
-            fetchData();
+            setRefreshTrigger(t => t + 1);
         } catch (err) {
             toast.error(err.response?.data?.meta?.message || 'Operation failed');
         }
@@ -79,7 +85,7 @@ const TestsajaPage = () => {
             try {
                 await deleteTestsaja(id);
                 toast.success('Deleted successfully');
-                fetchData();
+                setRefreshTrigger(t => t + 1);
             } catch (err) {
                 toast.error('Failed to delete');
             }
@@ -103,9 +109,24 @@ const TestsajaPage = () => {
                     columns={columns}
                     data={data}
                     loading={loading}
-                    onEdit={handleOpenModal}
-                    onDelete={handleDelete}
+                    actions={[
+                        { label: 'Edit', onClick: handleOpenModal },
+                        { label: 'Delete', onClick: (row) => handleDelete(row.id), className: 'text-error' },
+                    ]}
                 />
+                {!loading && data.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={paginationMeta.total_pages}
+                        totalItems={paginationMeta.total_data}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCurrentPage}
+                        onLimitChange={(newLimit) => {
+                            setItemsPerPage(newLimit);
+                            setCurrentPage(1);
+                        }}
+                    />
+                )}
             </Card>
 
             <Modal
@@ -119,8 +140,6 @@ const TestsajaPage = () => {
                         name="name"
                         value={formData.name.toString()}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-
-
                         required
                     />
                     <div className="flex justify-end gap-3 pt-4">

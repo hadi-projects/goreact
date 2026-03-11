@@ -4,6 +4,7 @@ import Button from '../../components/Button';
 import Card from '../../components/Card';
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
+import Pagination from '../../components/Pagination';
 import TextField from '../../components/TextField';
 import {
     getAllProduks,
@@ -17,32 +18,37 @@ const ProdukPage = () => {
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [paginationMeta, setPaginationMeta] = useState({ total_data: 0, total_pages: 1 });
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [formData, setFormData] = useState({
         name: '',
         harga: 0,
     });
 
     const columns = [
+        { header: 'ID', accessor: 'id' },
         { header: 'Name', accessor: 'name' },
         { header: 'Harga', accessor: 'harga' },
         { header: 'Created At', accessor: 'created_at', render: (row) => new Date(row.created_at).toLocaleString() },
     ];
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const res = await getAllProduks();
-            setData(res.data?.data || []);
-        } catch (err) {
-            toast.error('Failed to fetch data');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const res = await getAllProduks({ page: currentPage, limit: itemsPerPage });
+                setData(res.data?.data || []);
+                setPaginationMeta(res.data?.meta || { total_data: 0, total_pages: 1 });
+            } catch (err) {
+                toast.error('Failed to fetch data');
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchData();
-    }, []);
+    }, [currentPage, itemsPerPage, refreshTrigger]);
 
     const handleOpenModal = (item = null) => {
         if (item) {
@@ -72,7 +78,7 @@ const ProdukPage = () => {
                 toast.success('Created successfully');
             }
             setIsModalOpen(false);
-            fetchData();
+            setRefreshTrigger(t => t + 1);
         } catch (err) {
             toast.error(err.response?.data?.meta?.message || 'Operation failed');
         }
@@ -83,7 +89,7 @@ const ProdukPage = () => {
             try {
                 await deleteProduk(id);
                 toast.success('Deleted successfully');
-                fetchData();
+                setRefreshTrigger(t => t + 1);
             } catch (err) {
                 toast.error('Failed to delete');
             }
@@ -107,9 +113,24 @@ const ProdukPage = () => {
                     columns={columns}
                     data={data}
                     loading={loading}
-                    onEdit={handleOpenModal}
-                    onDelete={handleDelete}
+                    actions={[
+                        { label: 'Edit', onClick: handleOpenModal },
+                        { label: 'Delete', onClick: (row) => handleDelete(row.id), className: 'text-error' },
+                    ]}
                 />
+                {!loading && data.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={paginationMeta.total_pages}
+                        totalItems={paginationMeta.total_data}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCurrentPage}
+                        onLimitChange={(newLimit) => {
+                            setItemsPerPage(newLimit);
+                            setCurrentPage(1);
+                        }}
+                    />
+                )}
             </Card>
 
             <Modal
@@ -123,8 +144,6 @@ const ProdukPage = () => {
                         name="name"
                         value={formData.name.toString()}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-
-
                         required
                     />
                     <TextField
@@ -132,7 +151,6 @@ const ProdukPage = () => {
                         name="harga"
                         value={formData.harga.toString()}
                         onChange={(e) => setFormData({ ...formData, harga: parseInt(e.target.value) || 0 })}
-
                         type="number"
                         required
                     />
