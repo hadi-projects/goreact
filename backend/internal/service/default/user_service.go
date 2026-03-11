@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -16,12 +17,12 @@ import (
 )
 
 type UserService interface {
-	Register(req dto.RegisterRequest) (*dto.UserResponse, error)
-	CreateUser(req dto.CreateUserRequest) (*dto.UserResponse, error)
+	Register(ctx context.Context, req dto.RegisterRequest) (*dto.UserResponse, error)
+	CreateUser(ctx context.Context, req dto.CreateUserRequest) (*dto.UserResponse, error)
 	GetMe(userID uint) (*dto.UserResponse, error)
 	GetAll(pagination *dto.PaginationRequest) (*dto.PaginationResponse, error)
-	Update(id uint, req dto.UpdateUserRequest) (*dto.UserResponse, error)
-	Delete(id uint) error
+	Update(ctx context.Context, id uint, req dto.UpdateUserRequest) (*dto.UserResponse, error)
+	Delete(ctx context.Context, id uint) error
 }
 
 type userService struct {
@@ -38,7 +39,7 @@ func NewUserService(userRepo repository.UserRepository, config *config.Config, c
 	}
 }
 
-func (s *userService) Register(req dto.RegisterRequest) (*dto.UserResponse, error) {
+func (s *userService) Register(ctx context.Context, req dto.RegisterRequest) (*dto.UserResponse, error) {
 	// Check if email exists
 	existingUser, _ := s.userRepo.FindByEmail(req.Email)
 	if existingUser != nil {
@@ -70,11 +71,12 @@ func (s *userService) Register(req dto.RegisterRequest) (*dto.UserResponse, erro
 	// Invalidate users list cache
 	s.cache.DeletePattern("users:*")
 
-	logger.AuditLogger.Info().
-		Uint("user_id", user.ID).
-		Str("email", user.Email).
-		Str("action", "user_registration").
-		Msg("user registered successfully")
+	// logger.AuditLogger.Info().
+	// 	Uint("user_id", user.ID).
+	// 	Str("email", user.Email).
+	// 	Str("action", "user_registration").
+	// 	Msg("user registered successfully")
+	logger.LogAudit(ctx, "REGISTER", "USER", fmt.Sprintf("%d", user.ID), fmt.Sprintf("email: %s", user.Email))
 
 	return &dto.UserResponse{
 		ID:        user.ID,
@@ -86,7 +88,7 @@ func (s *userService) Register(req dto.RegisterRequest) (*dto.UserResponse, erro
 	}, nil
 }
 
-func (s *userService) CreateUser(req dto.CreateUserRequest) (*dto.UserResponse, error) {
+func (s *userService) CreateUser(ctx context.Context, req dto.CreateUserRequest) (*dto.UserResponse, error) {
 	// Check if email exists
 	existingUser, _ := s.userRepo.FindByEmail(req.Email)
 	if existingUser != nil {
@@ -111,11 +113,12 @@ func (s *userService) CreateUser(req dto.CreateUserRequest) (*dto.UserResponse, 
 	// Invalidate users list cache
 	s.cache.DeletePattern("users:*")
 
-	logger.AuditLogger.Info().
-		Uint("user_id", user.ID).
-		Str("email", user.Email).
-		Str("action", "user_creation").
-		Msg("user created by admin")
+	// logger.AuditLogger.Info().
+	// 	Uint("user_id", user.ID).
+	// 	Str("email", user.Email).
+	// 	Str("action", "user_creation").
+	// 	Msg("user created by admin")
+	logger.LogAudit(ctx, "CREATE", "USER", fmt.Sprintf("%d", user.ID), fmt.Sprintf("email: %s, role_id: %d", user.Email, user.RoleID))
 
 	return &dto.UserResponse{
 		ID:        user.ID,
@@ -207,7 +210,7 @@ func (s *userService) GetAll(pagination *dto.PaginationRequest) (*dto.Pagination
 	return response, nil
 }
 
-func (s *userService) Update(id uint, req dto.UpdateUserRequest) (*dto.UserResponse, error) {
+func (s *userService) Update(ctx context.Context, id uint, req dto.UpdateUserRequest) (*dto.UserResponse, error) {
 	user, err := s.userRepo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -238,11 +241,12 @@ func (s *userService) Update(id uint, req dto.UpdateUserRequest) (*dto.UserRespo
 	s.cache.Delete(fmt.Sprintf("user:%d", id))
 	s.cache.DeletePattern("users:*")
 
-	logger.AuditLogger.Info().
-		Uint("user_id", user.ID).
-		Str("email", user.Email).
-		Str("action", "user_update").
-		Msg("user details updated")
+	// logger.AuditLogger.Info().
+	// 	Uint("user_id", user.ID).
+	// 	Str("email", user.Email).
+	// 	Str("action", "user_update").
+	// 	Msg("user details updated")
+	logger.LogAudit(ctx, "UPDATE", "USER", fmt.Sprintf("%d", id), fmt.Sprintf("email: %s, role_id: %d", user.Email, user.RoleID))
 
 	return &dto.UserResponse{
 		ID:        user.ID,
@@ -254,15 +258,16 @@ func (s *userService) Update(id uint, req dto.UpdateUserRequest) (*dto.UserRespo
 	}, nil
 }
 
-func (s *userService) Delete(id uint) error {
+func (s *userService) Delete(ctx context.Context, id uint) error {
 	// Invalidate user cache and users list cache
 	s.cache.Delete(fmt.Sprintf("user:%d", id))
 	s.cache.DeletePattern("users:*")
 
-	logger.AuditLogger.Info().
-		Uint("target_user_id", id).
-		Str("action", "user_deletion").
-		Msg("user deleted")
+	// logger.AuditLogger.Info().
+	// 	Uint("target_user_id", id).
+	// 	Str("action", "user_deletion").
+	// 	Msg("user deleted")
+	logger.LogAudit(ctx, "DELETE", "USER", fmt.Sprintf("%d", id), "")
 
 	return s.userRepo.Delete(id)
 }

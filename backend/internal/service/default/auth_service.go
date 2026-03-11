@@ -1,7 +1,9 @@
 package service
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -17,9 +19,9 @@ import (
 )
 
 type AuthService interface {
-	Login(req dto.LoginRequest) (*dto.LoginResponse, error)
-	ForgotPassword(req dto.ForgotPasswordRequest) error
-	ResetPassword(req dto.ResetPasswordRequest) error
+	Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error)
+	ForgotPassword(ctx context.Context, req dto.ForgotPasswordRequest) error
+	ResetPassword(ctx context.Context, req dto.ResetPasswordRequest) error
 }
 
 type authService struct {
@@ -46,7 +48,7 @@ func NewAuthService(
 	}
 }
 
-func (s *authService) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
+func (s *authService) Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error) {
 	// 1. Find user by email
 	user, err := s.userRepo.FindByEmail(req.Email)
 	if err != nil {
@@ -94,6 +96,9 @@ func (s *authService) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
 		Str("action", "login").
 		Msg("login successful")
 
+	// Audit login
+	logger.LogAudit(context.WithValue(context.WithValue(ctx, logger.CtxKeyUserID, user.ID), logger.CtxKeyUserEmail, user.Email), "LOGIN", "AUTH", fmt.Sprintf("%d", user.ID), "")
+
 	// 4. Return response
 	return &dto.LoginResponse{
 		AccessToken:  signedToken,
@@ -111,7 +116,7 @@ func (s *authService) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
 	}, nil
 }
 
-func (s *authService) ForgotPassword(req dto.ForgotPasswordRequest) error {
+func (s *authService) ForgotPassword(ctx context.Context, req dto.ForgotPasswordRequest) error {
 	// 1. Find user by email
 	user, err := s.userRepo.FindByEmail(req.Email)
 	if err != nil {
@@ -119,6 +124,9 @@ func (s *authService) ForgotPassword(req dto.ForgotPasswordRequest) error {
 		logger.AuthLogger.Warn().Str("email", req.Email).Msg("ForgotPassword: user not found")
 		return nil
 	}
+
+	// Audit forgot password
+	logger.LogAudit(ctx, "FORGOT_PASSWORD", "AUTH", fmt.Sprintf("%d", user.ID), fmt.Sprintf("email: %s", req.Email))
 
 	// 2. Generate token
 	token := uuid.New().String()
@@ -179,7 +187,7 @@ func (s *authService) ForgotPassword(req dto.ForgotPasswordRequest) error {
 	return nil
 }
 
-func (s *authService) ResetPassword(req dto.ResetPasswordRequest) error {
+func (s *authService) ResetPassword(ctx context.Context, req dto.ResetPasswordRequest) error {
 	// 1. Find token
 	resetToken, err := s.tokenRepo.FindByToken(req.Token)
 	if err != nil {
@@ -208,6 +216,9 @@ func (s *authService) ResetPassword(req dto.ResetPasswordRequest) error {
 	if err := s.tokenRepo.DeleteByUserID(user.ID); err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("Failed to delete reset tokens")
 	}
+
+	// Audit reset password
+	logger.LogAudit(context.WithValue(context.WithValue(ctx, logger.CtxKeyUserID, user.ID), logger.CtxKeyUserEmail, user.Email), "RESET_PASSWORD", "AUTH", fmt.Sprintf("%d", user.ID), "")
 
 	return nil
 }

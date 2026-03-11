@@ -26,6 +26,8 @@ func main() {
 		&entity.Permission{},
 		&entity.PasswordResetToken{},
 		&entity.HttpLog{},
+		&entity.SystemLog{},
+		&entity.AuditLog{},
 		&customEntity.Testsaja{},
 		&customEntity.Produk{},
 		&customEntity.Testdua{},

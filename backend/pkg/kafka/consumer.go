@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/hadi-projects/go-react-starter/config"
@@ -71,16 +72,41 @@ func (h *saramaConsumerHandler) Cleanup(sarama.ConsumerGroupSession) error {
 
 func (h *saramaConsumerHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for message := range claim.Messages() {
-		logger.SystemLogger.Info().
-			Str("topic", message.Topic).
-			Int32("partition", message.Partition).
-			Int64("offset", message.Offset).
-			Msg("Message claimed")
-
+		start := time.Now()
+		
+		var status int = 200
+		var processErr error
+		
 		if err := h.handler(message.Value); err != nil {
-			logger.SystemLogger.Error().Err(err).Msg("Failed to process message")
-			// Depending on requirement, we might not mark offset if processing fails
-			// For now, we log and mark as processed to avoid infinite loops on bad messages
+			status = 500
+			processErr = err
+		}
+
+		elapsed := time.Since(start)
+		truncatedReq := logger.Truncate(string(message.Value), 65536)
+
+		logger.SystemLogger.Info().
+			Str("method", "KAFKA:CONSUME").
+			Str("path", message.Topic).
+			Int("status_code", status).
+			Int64("latency", elapsed.Milliseconds()).
+			Str("request_body", truncatedReq).
+			Str("response_body", fmt.Sprintf("partition:%d, offset:%d", message.Partition, message.Offset)).
+			Msg("kafka operation")
+
+		if logger.SystemLogRepo != nil {
+			_ = logger.SystemLogRepo.Create(&logger.SystemLog{
+				Method:       "KAFKA:CONSUME",
+				Path:         message.Topic,
+				StatusCode:   status,
+				Latency:      elapsed.Milliseconds(),
+				RequestBody:  truncatedReq,
+				ResponseBody: fmt.Sprintf("partition:%d, offset:%d", message.Partition, message.Offset),
+			})
+		}
+
+		if processErr != nil {
+			logger.SystemLogger.Error().Err(processErr).Msg("Failed to process message")
 		}
 
 		session.MarkMessage(message, "")

@@ -2,13 +2,12 @@ package database
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hadi-projects/go-react-starter/config"
+	"github.com/hadi-projects/go-react-starter/pkg/logger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 func NewMySQLConnection(cfg *config.Config) (*gorm.DB, error) {
@@ -20,14 +19,7 @@ func NewMySQLConnection(cfg *config.Config) (*gorm.DB, error) {
 		cfg.Database.Name,
 	)
 
-	dbLogger := logger.New(
-		log.New(log.Writer(), "\r\n", log.LstdFlags),
-		logger.Config{
-			SlowThreshold: time.Second,
-			LogLevel:      logger.Info,
-			Colorful:      true,
-		},
-	)
+	dbLogger := logger.NewGormLogger(logger.SystemLogger)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: dbLogger,

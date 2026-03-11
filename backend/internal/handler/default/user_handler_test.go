@@ -54,7 +54,7 @@ func (s *UserHandlerTestSuite) TestRegister_Success() {
 		Email: req.Email,
 	}
 
-	s.mockService.EXPECT().Register(req).Return(res, nil)
+	s.mockService.EXPECT().Register(gomock.Any(), req).Return(res, nil)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)

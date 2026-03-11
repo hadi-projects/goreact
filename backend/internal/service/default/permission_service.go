@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"time"
@@ -13,10 +14,10 @@ import (
 )
 
 type PermissionService interface {
-	Create(req dto.CreatePermissionRequest) (*dto.PermissionResponse, error)
+	Create(ctx context.Context, req dto.CreatePermissionRequest) (*dto.PermissionResponse, error)
 	GetAll(pagination *dto.PaginationRequest) (*dto.PaginationResponse, error)
-	Update(id uint, req dto.UpdatePermissionRequest) (*dto.PermissionResponse, error)
-	Delete(id uint) error
+	Update(ctx context.Context, id uint, req dto.UpdatePermissionRequest) (*dto.PermissionResponse, error)
+	Delete(ctx context.Context, id uint) error
 }
 
 type permissionService struct {
@@ -31,7 +32,7 @@ func NewPermissionService(repo repository.PermissionRepository, cache cache.Cach
 	}
 }
 
-func (s *permissionService) Create(req dto.CreatePermissionRequest) (*dto.PermissionResponse, error) {
+func (s *permissionService) Create(ctx context.Context, req dto.CreatePermissionRequest) (*dto.PermissionResponse, error) {
 	permission := &entity.Permission{
 		Name:        req.Name,
 		Description: req.Description,
@@ -44,11 +45,12 @@ func (s *permissionService) Create(req dto.CreatePermissionRequest) (*dto.Permis
 	// Invalidate permissions list cache
 	s.cache.DeletePattern("permissions:*")
 
-	logger.AuditLogger.Info().
-		Uint("permission_id", permission.ID).
-		Str("name", permission.Name).
-		Str("action", "permission_creation").
-		Msg("permission created")
+	// logger.AuditLogger.Info().
+	// 	Uint("permission_id", permission.ID).
+	// 	Str("name", permission.Name).
+	// 	Str("action", "permission_creation").
+	// 	Msg("permission created")
+	logger.LogAudit(ctx, "CREATE", "PERMISSION", fmt.Sprintf("%d", permission.ID), fmt.Sprintf("name: %s", permission.Name))
 
 	return &dto.PermissionResponse{
 		ID:          permission.ID,
@@ -100,7 +102,7 @@ func (s *permissionService) GetAll(pagination *dto.PaginationRequest) (*dto.Pagi
 	return response, nil
 }
 
-func (s *permissionService) Update(id uint, req dto.UpdatePermissionRequest) (*dto.PermissionResponse, error) {
+func (s *permissionService) Update(ctx context.Context, id uint, req dto.UpdatePermissionRequest) (*dto.PermissionResponse, error) {
 	permission, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -115,11 +117,12 @@ func (s *permissionService) Update(id uint, req dto.UpdatePermissionRequest) (*d
 	// Invalidate permissions list cache
 	s.cache.DeletePattern("permissions:*")
 
-	logger.AuditLogger.Info().
-		Uint("permission_id", permission.ID).
-		Str("name", permission.Name).
-		Str("action", "permission_update").
-		Msg("permission updated")
+	// logger.AuditLogger.Info().
+	// 	Uint("permission_id", permission.ID).
+	// 	Str("name", permission.Name).
+	// 	Str("action", "permission_update").
+	// 	Msg("permission updated")
+	logger.LogAudit(ctx, "UPDATE", "PERMISSION", fmt.Sprintf("%d", id), fmt.Sprintf("name: %s", permission.Name))
 
 	return &dto.PermissionResponse{
 		ID:          permission.ID,
@@ -130,14 +133,15 @@ func (s *permissionService) Update(id uint, req dto.UpdatePermissionRequest) (*d
 	}, nil
 }
 
-func (s *permissionService) Delete(id uint) error {
+func (s *permissionService) Delete(ctx context.Context, id uint) error {
 	// Invalidate permissions list cache
 	s.cache.DeletePattern("permissions:*")
 
-	logger.AuditLogger.Info().
-		Uint("target_permission_id", id).
-		Str("action", "permission_deletion").
-		Msg("permission deleted")
+	// logger.AuditLogger.Info().
+	// 	Uint("target_permission_id", id).
+	// 	Str("action", "permission_deletion").
+	// 	Msg("permission deleted")
+	logger.LogAudit(ctx, "DELETE", "PERMISSION", fmt.Sprintf("%d", id), "")
 
 	return s.repo.Delete(id)
 }

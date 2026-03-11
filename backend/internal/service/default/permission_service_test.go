@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"testing"
 
 	dto "github.com/hadi-projects/go-react-starter/internal/dto/default"
@@ -46,7 +47,7 @@ func (s *PermissionServiceTestSuite) TestCreate_Success() {
 	})
 	s.mockCache.EXPECT().DeletePattern("permissions:*").Return(nil)
 
-	res, err := s.service.Create(req)
+	res, err := s.service.Create(context.TODO(), req)
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), res)
 	assert.Equal(s.T(), "test-permission", res.Name)

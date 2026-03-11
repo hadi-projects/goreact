@@ -3,6 +3,7 @@ package kafka
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/hadi-projects/go-react-starter/config"
@@ -34,6 +35,7 @@ func NewProducer(cfg *config.Config) (Producer, error) {
 }
 
 func (p *producer) Publish(topic string, message interface{}) error {
+	start := time.Now()
 	value, err := json.Marshal(message)
 	if err != nil {
 		return fmt.Errorf("failed to marshal message: %w", err)
@@ -49,11 +51,28 @@ func (p *producer) Publish(topic string, message interface{}) error {
 		return fmt.Errorf("failed to send message to kafka: %w", err)
 	}
 
+	elapsed := time.Since(start)
+	truncatedReq := logger.Truncate(string(value), 65536)
+
 	logger.SystemLogger.Info().
-		Str("topic", topic).
-		Int32("partition", partition).
-		Int64("offset", offset).
-		Msg("Message published to Kafka")
+		Str("method", "KAFKA:PUBLISH").
+		Str("path", topic).
+		Int("status_code", 200).
+		Int64("latency", elapsed.Milliseconds()).
+		Str("request_body", truncatedReq).
+		Str("response_body", fmt.Sprintf("partition:%d, offset:%d", partition, offset)).
+		Msg("kafka operation")
+
+	if logger.SystemLogRepo != nil {
+		_ = logger.SystemLogRepo.Create(&logger.SystemLog{
+			Method:       "KAFKA:PUBLISH",
+			Path:         topic,
+			StatusCode:   200,
+			Latency:      elapsed.Milliseconds(),
+			RequestBody:  truncatedReq,
+			ResponseBody: fmt.Sprintf("partition:%d, offset:%d", partition, offset),
+		})
+	}
 
 	return nil
 }

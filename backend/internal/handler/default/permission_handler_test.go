@@ -48,7 +48,7 @@ func (s *PermissionHandlerTestSuite) TestCreate_Success() {
 		Name: req.Name,
 	}
 
-	s.mockService.EXPECT().Create(req).Return(res, nil)
+	s.mockService.EXPECT().Create(gomock.Any(), req).Return(res, nil)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)

@@ -32,7 +32,7 @@ func (h *authHandler) Login(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.Login(loginReq)
+	res, err := h.service.Login(c.Request.Context(), loginReq)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("Login failed: service error")
 		response.Error(c, http.StatusUnauthorized, "Invalid email or password")
@@ -49,7 +49,7 @@ func (h *authHandler) ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.ForgotPassword(req); err != nil {
+	if err := h.service.ForgotPassword(c.Request.Context(), req); err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("ForgotPassword failed")
 		// Always return success to avoid leaking internal errors or user existence
 		response.Success(c, http.StatusOK, "If your email is registered, you will receive a password reset link.", nil)
@@ -66,7 +66,7 @@ func (h *authHandler) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.ResetPassword(req); err != nil {
+	if err := h.service.ResetPassword(c.Request.Context(), req); err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("ResetPassword failed")
 		response.Error(c, http.StatusBadRequest, err.Error())
 		return

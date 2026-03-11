@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/hadi-projects/go-react-starter/config"
 	"github.com/hadi-projects/go-react-starter/internal/router"
+	repository "github.com/hadi-projects/go-react-starter/internal/repository/default"
 	"github.com/hadi-projects/go-react-starter/pkg/cache"
 	"github.com/hadi-projects/go-react-starter/pkg/database"
 	"github.com/hadi-projects/go-react-starter/pkg/kafka"
@@ -18,6 +19,8 @@ func main() {
 	if err != nil {
 		logger.SystemLogger.Fatal().Err(err).Msg("Failed to connect to database")
 	}
+	logger.SystemLogRepo = repository.NewSystemLogRepository(db)
+	logger.AuditLogRepo = repository.NewAuditLogRepository(db)
 
 	cacheService, err := cache.NewRedisCache(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password, cfg.Redis.DB)
 	if err != nil {

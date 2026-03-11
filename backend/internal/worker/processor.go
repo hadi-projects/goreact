@@ -18,20 +18,22 @@ func ProcessResetPassword(payload []byte, mailService mailer.Mailer) error {
 		return err
 	}
 
-	logger.SystemLogger.Info().Str("email", data.Email).Msg("Processing reset password email")
+	// This is now redundant with mailer's structured logging, 
+	// but we can add a high-level one for the worker task itself.
+	logger.SystemLogger.Info().
+		Str("method", "WORKER:RESET_PASSWORD").
+		Str("path", data.Email).
+		Int("status_code", 200).
+		Str("request_body", string(payload)).
+		Msg("worker operation")
 
-	// Construct reset link (hardcoded for now, should come from config)
-	// Assuming frontend is at localhost:3000
-	// TODO: move base URL to config
+	// Construct reset link
 	resetLink := "http://localhost:3000/reset-password?token=" + data.Token
-
 	body := mailer.GetResetPasswordEmailNative(resetLink)
 
 	if err := mailService.SendEmail(data.Email, "Reset Password Request", body); err != nil {
-		logger.SystemLogger.Error().Err(err).Str("email", data.Email).Msg("Failed to send reset password email")
 		return err
 	}
 
-	logger.SystemLogger.Info().Str("email", data.Email).Msg("Reset password email sent successfully")
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hadi-projects/go-react-starter/pkg/logger"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -51,7 +52,36 @@ func NewRedisCache(host, port, password string, db int) (CacheService, error) {
 
 // Get retrieves a value from cache and unmarshals it into dest
 func (r *redisCache) Get(key string, dest interface{}) error {
+	start := time.Now()
 	val, err := r.client.Get(r.ctx, key).Result()
+	elapsed := time.Since(start)
+
+	// Truncate response for logging
+	truncatedVal := logger.Truncate(val, 65536)
+
+	status := 200
+	if err != nil && err != redis.Nil {
+		status = 500
+	}
+
+	logger.SystemLogger.Info().
+		Str("method", "REDIS:GET").
+		Str("path", key).
+		Int("status_code", status).
+		Int64("latency", elapsed.Milliseconds()).
+		Str("response_body", truncatedVal).
+		Msg("redis operation")
+
+	if logger.SystemLogRepo != nil {
+		_ = logger.SystemLogRepo.Create(&logger.SystemLog{
+			Method:       "REDIS:GET",
+			Path:         key,
+			StatusCode:   status,
+			Latency:      elapsed.Milliseconds(),
+			ResponseBody: truncatedVal,
+		})
+	}
+
 	if err == redis.Nil {
 		return fmt.Errorf("cache miss: key not found")
 	}
@@ -68,12 +98,42 @@ func (r *redisCache) Get(key string, dest interface{}) error {
 
 // Set stores a value in cache with the specified TTL
 func (r *redisCache) Set(key string, value interface{}, ttl time.Duration) error {
+	start := time.Now()
 	jsonValue, err := json.Marshal(value)
 	if err != nil {
 		return fmt.Errorf("failed to marshal value: %w", err)
 	}
 
-	if err := r.client.Set(r.ctx, key, jsonValue, ttl).Err(); err != nil {
+	err = r.client.Set(r.ctx, key, jsonValue, ttl).Err()
+	elapsed := time.Since(start)
+
+	// Truncate request body for logging
+	truncatedReq := logger.Truncate(string(jsonValue), 65536)
+
+	status := 200
+	if err != nil {
+		status = 500
+	}
+
+	logger.SystemLogger.Info().
+		Str("method", "REDIS:SET").
+		Str("path", key).
+		Int("status_code", status).
+		Int64("latency", elapsed.Milliseconds()).
+		Str("request_body", truncatedReq).
+		Msg("redis operation")
+
+	if logger.SystemLogRepo != nil {
+		_ = logger.SystemLogRepo.Create(&logger.SystemLog{
+			Method:      "REDIS:SET",
+			Path:        key,
+			StatusCode:  status,
+			Latency:     elapsed.Milliseconds(),
+			RequestBody: truncatedReq,
+		})
+	}
+
+	if err != nil {
 		return fmt.Errorf("failed to set cache: %w", err)
 	}
 

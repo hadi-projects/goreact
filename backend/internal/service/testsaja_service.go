@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"time"
@@ -14,11 +15,11 @@ import (
 )
 
 type TestsajaService interface {
-	Create(req dto.CreateTestsajaRequest) (*dto.TestsajaResponse, error)
+	Create(ctx context.Context, req dto.CreateTestsajaRequest) (*dto.TestsajaResponse, error)
 	GetAll(pagination *defaultDto.PaginationRequest) (*defaultDto.PaginationResponse, error)
 	GetByID(id uint) (*dto.TestsajaResponse, error)
-	Update(id uint, req dto.UpdateTestsajaRequest) (*dto.TestsajaResponse, error)
-	Delete(id uint) error
+	Update(ctx context.Context, id uint, req dto.UpdateTestsajaRequest) (*dto.TestsajaResponse, error)
+	Delete(ctx context.Context, id uint) error
 }
 
 type testsajaService struct {
@@ -33,7 +34,7 @@ func NewTestsajaService(repo repository.TestsajaRepository, cache cache.CacheSer
 	}
 }
 
-func (s *testsajaService) Create(req dto.CreateTestsajaRequest) (*dto.TestsajaResponse, error) {
+func (s *testsajaService) Create(ctx context.Context, req dto.CreateTestsajaRequest) (*dto.TestsajaResponse, error) {
 	entity := &entity.Testsaja{
 		Name: req.Name,
 	}
@@ -44,10 +45,11 @@ func (s *testsajaService) Create(req dto.CreateTestsajaRequest) (*dto.TestsajaRe
 
 	s.cache.DeletePattern("testsaja:*")
 
-	logger.AuditLogger.Info().
-		Uint("testsaja_id", entity.ID).
-		Str("action", "testsaja_creation").
-		Msg("testsaja created")
+	// logger.AuditLogger.Info().
+	// 	Uint("testsaja_id", entity.ID).
+	// 	Str("action", "testsaja_creation").
+	// 	Msg("testsaja created")
+	logger.LogAudit(ctx, "CREATE", "TESTSAJA", fmt.Sprintf("%d", entity.ID), fmt.Sprintf("name: %s", entity.Name))
 
 	return s.mapToResponse(entity), nil
 }
@@ -100,7 +102,7 @@ func (s *testsajaService) GetByID(id uint) (*dto.TestsajaResponse, error) {
 	return response, nil
 }
 
-func (s *testsajaService) Update(id uint, req dto.UpdateTestsajaRequest) (*dto.TestsajaResponse, error) {
+func (s *testsajaService) Update(ctx context.Context, id uint, req dto.UpdateTestsajaRequest) (*dto.TestsajaResponse, error) {
 	entity, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -116,22 +118,24 @@ func (s *testsajaService) Update(id uint, req dto.UpdateTestsajaRequest) (*dto.T
 	s.cache.Delete(fmt.Sprintf("testsaja:%d", id))
 	s.cache.DeletePattern("testsaja:*")
 
-	logger.AuditLogger.Info().
-		Uint("testsaja_id", entity.ID).
-		Str("action", "testsaja_update").
-		Msg("testsaja updated")
+	// logger.AuditLogger.Info().
+	// 	Uint("testsaja_id", entity.ID).
+	// 	Str("action", "testsaja_update").
+	// 	Msg("testsaja updated")
+	logger.LogAudit(ctx, "UPDATE", "TESTSAJA", fmt.Sprintf("%d", id), fmt.Sprintf("name: %s", entity.Name))
 
 	return s.mapToResponse(entity), nil
 }
 
-func (s *testsajaService) Delete(id uint) error {
+func (s *testsajaService) Delete(ctx context.Context, id uint) error {
 	s.cache.Delete(fmt.Sprintf("testsaja:%d", id))
 	s.cache.DeletePattern("testsaja:*")
 
-	logger.AuditLogger.Info().
-		Uint("testsaja_id", id).
-		Str("action", "testsaja_deletion").
-		Msg("testsaja deleted")
+	// logger.AuditLogger.Info().
+	// 	Uint("testsaja_id", id).
+	// 	Str("action", "testsaja_deletion").
+	// 	Msg("testsaja deleted")
+	logger.LogAudit(ctx, "DELETE", "TESTSAJA", fmt.Sprintf("%d", id), "")
 
 	return s.repo.Delete(id)
 }

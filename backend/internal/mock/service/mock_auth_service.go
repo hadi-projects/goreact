@@ -10,6 +10,7 @@
 package mock_service
 
 import (
+	"context"
 	reflect "reflect"
 
 	dto "github.com/hadi-projects/go-react-starter/internal/dto/default"
@@ -41,16 +42,44 @@ func (m *MockAuthService) EXPECT() *MockAuthServiceMockRecorder {
 }
 
 // Login mocks base method.
-func (m *MockAuthService) Login(req dto.LoginRequest) (*dto.LoginResponse, error) {
+func (m *MockAuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Login", req)
+	ret := m.ctrl.Call(m, "Login", ctx, req)
 	ret0, _ := ret[0].(*dto.LoginResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Login indicates an expected call of Login.
-func (mr *MockAuthServiceMockRecorder) Login(req any) *gomock.Call {
+func (mr *MockAuthServiceMockRecorder) Login(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockAuthService)(nil).Login), req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockAuthService)(nil).Login), ctx, req)
+}
+
+// ForgotPassword mocks base method.
+func (m *MockAuthService) ForgotPassword(ctx context.Context, req dto.ForgotPasswordRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ForgotPassword", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ForgotPassword indicates an expected call of ForgotPassword.
+func (mr *MockAuthServiceMockRecorder) ForgotPassword(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForgotPassword", reflect.TypeOf((*MockAuthService)(nil).ForgotPassword), ctx, req)
+}
+
+// ResetPassword mocks base method.
+func (m *MockAuthService) ResetPassword(ctx context.Context, req dto.ResetPasswordRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResetPassword", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResetPassword indicates an expected call of ResetPassword.
+func (mr *MockAuthServiceMockRecorder) ResetPassword(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetPassword", reflect.TypeOf((*MockAuthService)(nil).ResetPassword), ctx, req)
 }

@@ -34,7 +34,7 @@ func (h *permissionHandler) Create(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.Create(req)
+	res, err := h.service.Create(c.Request.Context(), req)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("Create permission failed: service error")
 		response.Error(c, http.StatusInternalServerError, err.Error())
@@ -88,7 +88,7 @@ func (h *permissionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.Update(uint(id), req)
+	res, err := h.service.Update(c.Request.Context(), uint(id), req)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Uint("id", uint(id)).Msg("Update permission failed: service error")
 		response.Error(c, http.StatusInternalServerError, err.Error())
@@ -107,7 +107,7 @@ func (h *permissionHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Delete(uint(id)); err != nil {
+	if err := h.service.Delete(c.Request.Context(), uint(id)); err != nil {
 		logger.SystemLogger.Error().Err(err).Uint("id", uint(id)).Msg("Delete permission failed: service error")
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return

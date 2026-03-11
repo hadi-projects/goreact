@@ -10,6 +10,7 @@
 package mock_service
 
 import (
+	"context"
 	reflect "reflect"
 
 	dto "github.com/hadi-projects/go-react-starter/internal/dto/default"
@@ -41,32 +42,32 @@ func (m *MockRoleService) EXPECT() *MockRoleServiceMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockRoleService) Create(req dto.CreateRoleRequest) (*dto.RoleResponse, error) {
+func (m *MockRoleService) Create(ctx context.Context, req dto.CreateRoleRequest) (*dto.RoleResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", req)
+	ret := m.ctrl.Call(m, "Create", ctx, req)
 	ret0, _ := ret[0].(*dto.RoleResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockRoleServiceMockRecorder) Create(req any) *gomock.Call {
+func (mr *MockRoleServiceMockRecorder) Create(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRoleService)(nil).Create), req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRoleService)(nil).Create), ctx, req)
 }
 
 // Delete mocks base method.
-func (m *MockRoleService) Delete(id uint) error {
+func (m *MockRoleService) Delete(ctx context.Context, id uint) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", id)
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockRoleServiceMockRecorder) Delete(id any) *gomock.Call {
+func (mr *MockRoleServiceMockRecorder) Delete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRoleService)(nil).Delete), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRoleService)(nil).Delete), ctx, id)
 }
 
 // GetAll mocks base method.
@@ -100,16 +101,16 @@ func (mr *MockRoleServiceMockRecorder) GetByID(id any) *gomock.Call {
 }
 
 // Update mocks base method.
-func (m *MockRoleService) Update(id uint, req dto.UpdateRoleRequest) (*dto.RoleResponse, error) {
+func (m *MockRoleService) Update(ctx context.Context, id uint, req dto.UpdateRoleRequest) (*dto.RoleResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", id, req)
+	ret := m.ctrl.Call(m, "Update", ctx, id, req)
 	ret0, _ := ret[0].(*dto.RoleResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockRoleServiceMockRecorder) Update(id, req any) *gomock.Call {
+func (mr *MockRoleServiceMockRecorder) Update(ctx, id, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRoleService)(nil).Update), id, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRoleService)(nil).Update), ctx, id, req)
 }

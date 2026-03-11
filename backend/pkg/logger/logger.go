@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"context"
 	"io"
 	"os"
 	"path/filepath"
@@ -8,6 +9,99 @@ import (
 	"github.com/hadi-projects/go-react-starter/config"
 	"github.com/rs/zerolog"
 	"gopkg.in/natefinch/lumberjack.v2"
+)
+
+type contextKey string
+
+const (
+	CtxKeySkipLogging contextKey = "skip_logging"
+	CtxKeyUserID      contextKey = "user_id"
+	CtxKeyUserEmail   contextKey = "user_email"
+	CtxKeyRequestID   contextKey = "request_id"
+)
+
+func Truncate(s string, maxLen int) string {
+	if len(s) <= maxLen {
+		return s
+	}
+	return s[:maxLen] + "... [truncated]"
+}
+
+type SystemLog struct {
+	RequestID    string
+	Method       string
+	Path         string
+	StatusCode   int
+	Latency      int64
+	RequestBody  string
+	ResponseBody string
+}
+
+type SystemLogRepository interface {
+	Create(log *SystemLog) error
+}
+
+type AuditLog struct {
+	RequestID string
+	UserID    uint
+	UserEmail string
+	Action    string
+	Module    string
+	TargetID  string
+	Metadata  string
+}
+
+type AuditLogRepository interface {
+	Create(log *AuditLog) error
+}
+
+func LogAudit(ctx context.Context, action, module, targetID, metadata string) {
+	if AuditLogRepo == nil {
+		return
+	}
+
+	userID := uint(0)
+	userEmail := "system"
+	requestID := ""
+
+	// Extract from context (common keys used in Gin middleware)
+	if val, ok := ctx.Value(CtxKeyUserID).(uint); ok {
+		userID = val
+	}
+	if val, ok := ctx.Value(CtxKeyUserEmail).(string); ok {
+		userEmail = val
+	}
+	if val, ok := ctx.Value(CtxKeyRequestID).(string); ok {
+		requestID = val
+	}
+
+	// Truncate metadata to avoid oversized logs
+	truncatedMetadata := Truncate(metadata, 65536)
+
+	_ = AuditLogRepo.Create(&AuditLog{
+		RequestID: requestID,
+		UserID:    userID,
+		UserEmail: userEmail,
+		Action:    action,
+		Module:    module,
+		TargetID:  targetID,
+		Metadata:  truncatedMetadata,
+	})
+
+	// Also log to file-based AuditLogger
+	AuditLogger.Info().
+		Str("request_id", requestID).
+		Uint("user_id", userID).
+		Str("user_email", userEmail).
+		Str("action", action).
+		Str("module", module).
+		Str("target_id", targetID).
+		Msg("audit operation")
+}
+
+var (
+	SystemLogRepo SystemLogRepository
+	AuditLogRepo  AuditLogRepository
 )
 
 type Logger interface {

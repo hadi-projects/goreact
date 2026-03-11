@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"time"
@@ -14,11 +15,11 @@ import (
 )
 
 type ProdukService interface {
-	Create(req dto.CreateProdukRequest) (*dto.ProdukResponse, error)
+	Create(ctx context.Context, req dto.CreateProdukRequest) (*dto.ProdukResponse, error)
 	GetAll(pagination *defaultDto.PaginationRequest) (*defaultDto.PaginationResponse, error)
 	GetByID(id uint) (*dto.ProdukResponse, error)
-	Update(id uint, req dto.UpdateProdukRequest) (*dto.ProdukResponse, error)
-	Delete(id uint) error
+	Update(ctx context.Context, id uint, req dto.UpdateProdukRequest) (*dto.ProdukResponse, error)
+	Delete(ctx context.Context, id uint) error
 }
 
 type produkService struct {
@@ -33,7 +34,7 @@ func NewProdukService(repo repository.ProdukRepository, cache cache.CacheService
 	}
 }
 
-func (s *produkService) Create(req dto.CreateProdukRequest) (*dto.ProdukResponse, error) {
+func (s *produkService) Create(ctx context.Context, req dto.CreateProdukRequest) (*dto.ProdukResponse, error) {
 	entity := &entity.Produk{
 		Name: req.Name,
 		Harga: req.Harga,
@@ -46,10 +47,11 @@ func (s *produkService) Create(req dto.CreateProdukRequest) (*dto.ProdukResponse
 	s.cache.DeletePattern("produk:*")
 
 	
-	logger.AuditLogger.Info().
-		Uint("produk_id", entity.ID).
-		Str("action", "produk_creation").
-		Msg("produk created")
+	// logger.AuditLogger.Info().
+	// 	Uint("produk_id", entity.ID).
+	// 	Str("action", "produk_creation").
+	// 	Msg("produk created")
+	logger.LogAudit(ctx, "CREATE", "PRODUK", fmt.Sprintf("%d", entity.ID), fmt.Sprintf("name: %s, harga: %d", entity.Name, entity.Harga))
 	
 
 	return s.mapToResponse(entity), nil
@@ -103,7 +105,7 @@ func (s *produkService) GetByID(id uint) (*dto.ProdukResponse, error) {
 	return response, nil
 }
 
-func (s *produkService) Update(id uint, req dto.UpdateProdukRequest) (*dto.ProdukResponse, error) {
+func (s *produkService) Update(ctx context.Context, id uint, req dto.UpdateProdukRequest) (*dto.ProdukResponse, error) {
 	entity, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -121,24 +123,26 @@ func (s *produkService) Update(id uint, req dto.UpdateProdukRequest) (*dto.Produ
 	s.cache.DeletePattern("produk:*")
 
 	
-	logger.AuditLogger.Info().
-		Uint("produk_id", entity.ID).
-		Str("action", "produk_update").
-		Msg("produk updated")
+	// logger.AuditLogger.Info().
+	// 	Uint("produk_id", entity.ID).
+	// 	Str("action", "produk_update").
+	// 	Msg("produk updated")
+	logger.LogAudit(ctx, "UPDATE", "PRODUK", fmt.Sprintf("%d", id), fmt.Sprintf("name: %s, harga: %d", entity.Name, entity.Harga))
 	
 
 	return s.mapToResponse(entity), nil
 }
 
-func (s *produkService) Delete(id uint) error {
+func (s *produkService) Delete(ctx context.Context, id uint) error {
 	s.cache.Delete(fmt.Sprintf("produk:%d", id))
 	s.cache.DeletePattern("produk:*")
 
 	
-	logger.AuditLogger.Info().
-		Uint("produk_id", id).
-		Str("action", "produk_deletion").
-		Msg("produk deleted")
+	// logger.AuditLogger.Info().
+	// 	Uint("produk_id", id).
+	// 	Str("action", "produk_deletion").
+	// 	Msg("produk deleted")
+	logger.LogAudit(ctx, "DELETE", "PRODUK", fmt.Sprintf("%d", id), "")
 	
 
 	return s.repo.Delete(id)

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"testing"
 
 	dto "github.com/hadi-projects/go-react-starter/internal/dto/default"
@@ -50,7 +51,7 @@ func (s *RoleServiceTestSuite) TestCreate_Success() {
 	s.mockCache.EXPECT().DeletePattern("roles:*").Return(nil)
 	s.mockRepo.EXPECT().FindByID(uint(1)).Return(&entity.Role{ID: 1, Name: "admin"}, nil)
 
-	res, err := s.service.Create(req)
+	res, err := s.service.Create(context.TODO(), req)
 	s.Require().NoError(err)
 	assert.NotNil(s.T(), res)
 	assert.Equal(s.T(), "admin", res.Name)

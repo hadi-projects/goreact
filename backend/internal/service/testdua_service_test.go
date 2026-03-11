@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hadi-projects/go-react-starter/internal/dto"
@@ -43,7 +44,7 @@ func (s *TestduaServiceTestSuite) TestCreate_Success() {
 	s.mockRepo.EXPECT().Create(entity).Return(nil)
 	s.mockCache.EXPECT().DeletePattern("testdua:*").Return(nil)
 
-	res, err := s.service.Create(req)
+	res, err := s.service.Create(context.TODO(), req)
 	assert.NoError(s.T(), err)
 	assert.NotNil(s.T(), res)
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"time"
@@ -14,11 +15,11 @@ import (
 )
 
 type TestduaService interface {
-	Create(req dto.CreateTestduaRequest) (*dto.TestduaResponse, error)
+	Create(ctx context.Context, req dto.CreateTestduaRequest) (*dto.TestduaResponse, error)
 	GetAll(pagination *defaultDto.PaginationRequest) (*defaultDto.PaginationResponse, error)
 	GetByID(id uint) (*dto.TestduaResponse, error)
-	Update(id uint, req dto.UpdateTestduaRequest) (*dto.TestduaResponse, error)
-	Delete(id uint) error
+	Update(ctx context.Context, id uint, req dto.UpdateTestduaRequest) (*dto.TestduaResponse, error)
+	Delete(ctx context.Context, id uint) error
 }
 
 type testduaService struct {
@@ -33,7 +34,7 @@ func NewTestduaService(repo repository.TestduaRepository, cache cache.CacheServi
 	}
 }
 
-func (s *testduaService) Create(req dto.CreateTestduaRequest) (*dto.TestduaResponse, error) {
+func (s *testduaService) Create(ctx context.Context, req dto.CreateTestduaRequest) (*dto.TestduaResponse, error) {
 	entity := &entity.Testdua{
 		Name: req.Name,
 	}
@@ -45,10 +46,11 @@ func (s *testduaService) Create(req dto.CreateTestduaRequest) (*dto.TestduaRespo
 	s.cache.DeletePattern("testdua:*")
 
 	
-	logger.AuditLogger.Info().
-		Uint("testdua_id", entity.ID).
-		Str("action", "testdua_creation").
-		Msg("testdua created")
+	// logger.AuditLogger.Info().
+	// 	Uint("testdua_id", entity.ID).
+	// 	Str("action", "testdua_creation").
+	// 	Msg("testdua created")
+	logger.LogAudit(ctx, "CREATE", "TESTDUA", fmt.Sprintf("%d", entity.ID), fmt.Sprintf("name: %s", entity.Name))
 	
 
 	return s.mapToResponse(entity), nil
@@ -102,7 +104,7 @@ func (s *testduaService) GetByID(id uint) (*dto.TestduaResponse, error) {
 	return response, nil
 }
 
-func (s *testduaService) Update(id uint, req dto.UpdateTestduaRequest) (*dto.TestduaResponse, error) {
+func (s *testduaService) Update(ctx context.Context, id uint, req dto.UpdateTestduaRequest) (*dto.TestduaResponse, error) {
 	entity, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -117,24 +119,26 @@ func (s *testduaService) Update(id uint, req dto.UpdateTestduaRequest) (*dto.Tes
 	s.cache.DeletePattern("testdua:*")
 
 	
-	logger.AuditLogger.Info().
-		Uint("testdua_id", entity.ID).
-		Str("action", "testdua_update").
-		Msg("testdua updated")
+	// logger.AuditLogger.Info().
+	// 	Uint("testdua_id", entity.ID).
+	// 	Str("action", "testdua_update").
+	// 	Msg("testdua updated")
+	logger.LogAudit(ctx, "UPDATE", "TESTDUA", fmt.Sprintf("%d", id), fmt.Sprintf("name: %s", entity.Name))
 	
 
 	return s.mapToResponse(entity), nil
 }
 
-func (s *testduaService) Delete(id uint) error {
+func (s *testduaService) Delete(ctx context.Context, id uint) error {
 	s.cache.Delete(fmt.Sprintf("testdua:%d", id))
 	s.cache.DeletePattern("testdua:*")
 
 	
-	logger.AuditLogger.Info().
-		Uint("testdua_id", id).
-		Str("action", "testdua_deletion").
-		Msg("testdua deleted")
+	// logger.AuditLogger.Info().
+	// 	Uint("testdua_id", id).
+	// 	Str("action", "testdua_deletion").
+	// 	Msg("testdua deleted")
+	logger.LogAudit(ctx, "DELETE", "TESTDUA", fmt.Sprintf("%d", id), "")
 	
 
 	return s.repo.Delete(id)

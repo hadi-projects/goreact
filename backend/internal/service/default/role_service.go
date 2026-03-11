@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"time"
@@ -13,11 +14,11 @@ import (
 )
 
 type RoleService interface {
-	Create(req dto.CreateRoleRequest) (*dto.RoleResponse, error)
+	Create(ctx context.Context, req dto.CreateRoleRequest) (*dto.RoleResponse, error)
 	GetAll(pagination *dto.PaginationRequest) (*dto.PaginationResponse, error)
 	GetByID(id uint) (*dto.RoleResponse, error)
-	Update(id uint, req dto.UpdateRoleRequest) (*dto.RoleResponse, error)
-	Delete(id uint) error
+	Update(ctx context.Context, id uint, req dto.UpdateRoleRequest) (*dto.RoleResponse, error)
+	Delete(ctx context.Context, id uint) error
 }
 
 type roleService struct {
@@ -32,7 +33,7 @@ func NewRoleService(roleRepo repository.RoleRepository, cache cache.CacheService
 	}
 }
 
-func (s *roleService) Create(req dto.CreateRoleRequest) (*dto.RoleResponse, error) {
+func (s *roleService) Create(ctx context.Context, req dto.CreateRoleRequest) (*dto.RoleResponse, error) {
 	role := &entity.Role{
 		Name:        req.Name,
 		Description: req.Description,
@@ -45,11 +46,12 @@ func (s *roleService) Create(req dto.CreateRoleRequest) (*dto.RoleResponse, erro
 	// Invalidate roles list cache
 	s.cache.DeletePattern("roles:*")
 
-	logger.AuditLogger.Info().
-		Uint("role_id", role.ID).
-		Str("name", role.Name).
-		Str("action", "role_creation").
-		Msg("role created")
+	// logger.AuditLogger.Info().
+	// 	Uint("role_id", role.ID).
+	// 	Str("name", role.Name).
+	// 	Str("action", "role_creation").
+	// 	Msg("role created")
+	logger.LogAudit(ctx, "CREATE", "ROLE", fmt.Sprintf("%d", role.ID), fmt.Sprintf("name: %s", role.Name))
 
 	// Fetch again to get permissions populated (or we can construct response manually if we trust repo)
 	// Better to fetch to be sure.
@@ -118,7 +120,7 @@ func (s *roleService) GetByID(id uint) (*dto.RoleResponse, error) {
 	return response, nil
 }
 
-func (s *roleService) Update(id uint, req dto.UpdateRoleRequest) (*dto.RoleResponse, error) {
+func (s *roleService) Update(ctx context.Context, id uint, req dto.UpdateRoleRequest) (*dto.RoleResponse, error) {
 	role, err := s.roleRepo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -141,11 +143,12 @@ func (s *roleService) Update(id uint, req dto.UpdateRoleRequest) (*dto.RoleRespo
 	s.cache.DeletePattern("roles:*")
 	s.cache.DeletePattern("user:*")
 
-	logger.AuditLogger.Info().
-		Uint("role_id", role.ID).
-		Str("name", role.Name).
-		Str("action", "role_update").
-		Msg("role updated")
+	// logger.AuditLogger.Info().
+	// 	Uint("role_id", role.ID).
+	// 	Str("name", role.Name).
+	// 	Str("action", "role_update").
+	// 	Msg("role updated")
+	logger.LogAudit(ctx, "UPDATE", "ROLE", fmt.Sprintf("%d", id), fmt.Sprintf("name: %s", role.Name))
 
 	updatedRole, err := s.roleRepo.FindByID(id)
 	if err != nil {
@@ -155,16 +158,17 @@ func (s *roleService) Update(id uint, req dto.UpdateRoleRequest) (*dto.RoleRespo
 	return s.mapToResponse(updatedRole), nil
 }
 
-func (s *roleService) Delete(id uint) error {
+func (s *roleService) Delete(ctx context.Context, id uint) error {
 	// Invalidate role cache, roles list cache, AND all user caches
 	s.cache.Delete(fmt.Sprintf("role:%d", id))
 	s.cache.DeletePattern("roles:*")
 	s.cache.DeletePattern("user:*")
 
-	logger.AuditLogger.Info().
-		Uint("target_role_id", id).
-		Str("action", "role_deletion").
-		Msg("role deleted")
+	// logger.AuditLogger.Info().
+	// 	Uint("target_role_id", id).
+	// 	Str("action", "role_deletion").
+	// 	Msg("role deleted")
+	logger.LogAudit(ctx, "DELETE", "ROLE", fmt.Sprintf("%d", id), "")
 
 	return s.roleRepo.Delete(id)
 }

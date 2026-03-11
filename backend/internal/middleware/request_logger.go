@@ -11,8 +11,6 @@ import (
 	"github.com/google/uuid"
 	entity "github.com/hadi-projects/go-react-starter/internal/entity/default"
 	repository "github.com/hadi-projects/go-react-starter/internal/repository/default"
-	"github.com/hadi-projects/go-react-starter/pkg/logger"
-	"github.com/rs/zerolog"
 )
 
 var sensitiveKeys = map[string]bool{
@@ -83,60 +81,8 @@ func RequestLogger(logRepo repository.HttpLogRepository) gin.HandlerFunc {
 		statusCode := ctx.Writer.Status()
 		userID, userExists := ctx.Get("user_id")
 
-		var logEvent *zerolog.Event
-
-		if strings.HasPrefix(path, "/api/auth") {
-			if statusCode >= 500 {
-				logEvent = logger.AuthLogger.Error()
-			} else {
-				logEvent = logger.AuthLogger.Info()
-			}
-		} else {
-			if statusCode >= 500 {
-				logEvent = logger.SystemLogger.Error()
-			} else {
-				logEvent = logger.SystemLogger.Info()
-			}
-		}
-
-		logEvent.
-			Str("request_id", requestID).
-			Str("timestamp", time.Now().Format(time.RFC3339)).
-			Uint("latency", uint(latency))
-		if userExists {
-			logEvent.Uint("user_id", userID.(uint))
-		}
-		requestDict := zerolog.Dict().
-			Str("method", method).
-			Str("path", path).
-			Str("ip", clientIP).
-			Str("user_agent", userAgent)
-
-		if len(body) > 0 && json.Valid(body) {
-			censoredBody := censorBody(body)
-			requestDict.RawJSON("body", censoredBody)
-		}
-
-		responseDict := zerolog.Dict().
-			Int("status_code", statusCode).
-			Dur("latency", latency)
-
-		if blw.body.Len() > 0 {
-			// Skip logging response body for logs endpoint to avoid recursive explosion
-			if !strings.Contains(path, "/logs") && blw.body.Len() < 1024*1024 { // 1MB limit for terminal log
-				resBody := blw.body.Bytes()
-				if json.Valid(resBody) {
-					censoredBody := censorBody(resBody)
-					responseDict.RawJSON("body", censoredBody)
-				}
-			} else {
-				responseDict.Str("body", "[skipped or too large]")
-			}
-		}
-
-		logEvent.Dict("request", requestDict)
-		logEvent.Dict("response", responseDict)
-		logEvent.Msg("incoming request")
+		// Removed zerolog logging to SystemLogger/AuthLogger as per requirement
+		// incoming requests are now only logged to database (HttpLog)
 
 		// Async save to database
 		go func() {

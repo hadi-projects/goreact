@@ -36,7 +36,7 @@ func (h *userHandler) Register(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.Register(req)
+	res, err := h.service.Register(c.Request.Context(), req)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("Register failed: service error")
 		response.Error(c, http.StatusInternalServerError, err.Error())
@@ -54,7 +54,7 @@ func (h *userHandler) Create(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.CreateUser(req)
+	res, err := h.service.CreateUser(c.Request.Context(), req)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Msg("Create user failed: service error")
 		response.Error(c, http.StatusInternalServerError, err.Error())
@@ -133,7 +133,7 @@ func (h *userHandler) Update(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.Update(uint(id), req)
+	res, err := h.service.Update(c.Request.Context(), uint(id), req)
 	if err != nil {
 		logger.SystemLogger.Error().Err(err).Uint("id", uint(id)).Msg("Update user failed: service error")
 		response.Error(c, http.StatusInternalServerError, err.Error())
@@ -151,7 +151,7 @@ func (h *userHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Delete(uint(id)); err != nil {
+	if err := h.service.Delete(c.Request.Context(), uint(id)); err != nil {
 		logger.SystemLogger.Error().Err(err).Uint("id", uint(id)).Msg("Delete user failed: service error")
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return

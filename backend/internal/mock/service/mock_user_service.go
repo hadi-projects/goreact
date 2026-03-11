@@ -10,6 +10,7 @@
 package mock_service
 
 import (
+	"context"
 	reflect "reflect"
 
 	dto "github.com/hadi-projects/go-react-starter/internal/dto/default"
@@ -41,32 +42,32 @@ func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 }
 
 // CreateUser mocks base method.
-func (m *MockUserService) CreateUser(req dto.CreateUserRequest) (*dto.UserResponse, error) {
+func (m *MockUserService) CreateUser(ctx context.Context, req dto.CreateUserRequest) (*dto.UserResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUser", req)
+	ret := m.ctrl.Call(m, "CreateUser", ctx, req)
 	ret0, _ := ret[0].(*dto.UserResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateUser indicates an expected call of CreateUser.
-func (mr *MockUserServiceMockRecorder) CreateUser(req any) *gomock.Call {
+func (mr *MockUserServiceMockRecorder) CreateUser(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserService)(nil).CreateUser), req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserService)(nil).CreateUser), ctx, req)
 }
 
 // Delete mocks base method.
-func (m *MockUserService) Delete(id uint) error {
+func (m *MockUserService) Delete(ctx context.Context, id uint) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", id)
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockUserServiceMockRecorder) Delete(id any) *gomock.Call {
+func (mr *MockUserServiceMockRecorder) Delete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUserService)(nil).Delete), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUserService)(nil).Delete), ctx, id)
 }
 
 // GetAll mocks base method.
@@ -100,31 +101,31 @@ func (mr *MockUserServiceMockRecorder) GetMe(userID any) *gomock.Call {
 }
 
 // Register mocks base method.
-func (m *MockUserService) Register(req dto.RegisterRequest) (*dto.UserResponse, error) {
+func (m *MockUserService) Register(ctx context.Context, req dto.RegisterRequest) (*dto.UserResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Register", req)
+	ret := m.ctrl.Call(m, "Register", ctx, req)
 	ret0, _ := ret[0].(*dto.UserResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Register indicates an expected call of Register.
-func (mr *MockUserServiceMockRecorder) Register(req any) *gomock.Call {
+func (mr *MockUserServiceMockRecorder) Register(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockUserService)(nil).Register), req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockUserService)(nil).Register), ctx, req)
 }
 
 // Update mocks base method.
-func (m *MockUserService) Update(id uint, req dto.UpdateUserRequest) (*dto.UserResponse, error) {
+func (m *MockUserService) Update(ctx context.Context, id uint, req dto.UpdateUserRequest) (*dto.UserResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", id, req)
+	ret := m.ctrl.Call(m, "Update", ctx, id, req)
 	ret0, _ := ret[0].(*dto.UserResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockUserServiceMockRecorder) Update(id, req any) *gomock.Call {
+func (mr *MockUserServiceMockRecorder) Update(ctx, id, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserService)(nil).Update), id, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserService)(nil).Update), ctx, id, req)
 }

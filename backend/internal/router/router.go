@@ -57,6 +57,8 @@ func (r *Router) SetupRouter() *gin.Engine {
 
 	// Repositories initializations for middleware
 	httpLogRepo := repository.NewHttpLogRepository(db)
+	systemLogRepo := repository.NewSystemLogRepository(db)
+	auditLogRepo := repository.NewAuditLogRepository(db)
 
 	router.Use(gin.Recovery())
 	router.Use(middleware.CORSMiddleware(r.config))
@@ -84,6 +86,8 @@ func (r *Router) SetupRouter() *gin.Engine {
 	logService := service.NewLogService(r.config)
 	statisticsService := service.NewStatisticsService(db)
 	httpLogService := service.NewHttpLogService(httpLogRepo, r.cache)
+	systemLogService := service.NewSystemLogService(systemLogRepo, r.cache)
+	auditLogService := service.NewAuditLogService(auditLogRepo, r.cache)
 	testsajaService := customService.NewTestsajaService(testsajaRepo, r.cache)
 	produkService := customService.NewProdukService(produkRepo, r.cache)
 	testduaService := customService.NewTestduaService(testduaRepo, r.cache)
@@ -98,6 +102,8 @@ func (r *Router) SetupRouter() *gin.Engine {
 	cacheHandler := handler.NewCacheHandler(r.cache)
 	statisticsHandler := handler.NewStatisticsHandler(statisticsService)
 	httpLogHandler := handler.NewHttpLogHandler(httpLogService)
+	systemLogHandler := handler.NewSystemLogHandler(systemLogService)
+	auditLogHandler := handler.NewAuditLogHandler(auditLogService)
 	generatorHandler := handler.NewGeneratorHandler(".", db)
 	testsajaHandler := customHandler.NewTestsajaHandler(testsajaService)
 	produkHandler := customHandler.NewProdukHandler(produkService)
@@ -107,7 +113,7 @@ func (r *Router) SetupRouter() *gin.Engine {
 
 	v1 := router.Group("/api/v1")
 	{
-		r.setupPrivateRoutes(v1, authHandler, userHandler, permissionHandler, roleHandler, logHandler, cacheHandler, statisticsHandler, httpLogHandler,
+		r.setupPrivateRoutes(v1, authHandler, userHandler, permissionHandler, roleHandler, logHandler, cacheHandler, statisticsHandler, httpLogHandler, systemLogHandler, auditLogHandler,
 
 			generatorHandler,
 			testsajaHandler,
