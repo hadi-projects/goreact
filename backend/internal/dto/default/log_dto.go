@@ -10,6 +10,7 @@ type LogResponse struct {
 	Email     string    `json:"email,omitempty"`
 	Time      time.Time `json:"time"`
 	Type      string    `json:"type"` // "auth" or "audit"
+	Source    string    `json:"source,omitempty"`
 	RequestID string    `json:"request_id,omitempty"`
 	Details   any       `json:"details,omitempty"`
 }

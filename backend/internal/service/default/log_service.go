@@ -36,7 +36,7 @@ func (s *logService) GetLogs(query dto.LogQuery) ([]dto.LogResponse, error) {
 		filesToRead = append(filesToRead, "audit.log")
 	}
 	if query.Type == "all" || query.Type == "system" {
-		filesToRead = append(filesToRead, "system.log")
+		filesToRead = append(filesToRead, "system.log", "db.log", "redis.log", "rate_limit.log")
 	}
 
 	for _, fileName := range filesToRead {
@@ -113,6 +113,13 @@ func (s *logService) readLogFile(filePath string, logType string) ([]dto.LogResp
 		}
 		if val, ok := raw["request_id"].(string); ok {
 			log.RequestID = val
+		}
+
+		// Populate Source
+		if val, ok := raw["method"].(string); ok && val != "" {
+			log.Source = strings.ToLower(val)
+		} else {
+			log.Source = logType
 		}
 
 		// Handle user_id (it could be uint or float64 from json)

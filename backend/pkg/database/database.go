@@ -19,7 +19,7 @@ func NewMySQLConnection(cfg *config.Config) (*gorm.DB, error) {
 		cfg.Database.Name,
 	)
 
-	dbLogger := logger.NewGormLogger(logger.SystemLogger)
+	dbLogger := logger.NewGormLogger(logger.DBLogger)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: dbLogger,
