@@ -35,6 +35,7 @@ func main() {
 		&customEntity.Mainnn{},
 		&customEntity.Wisuda{},
 				&customEntity.Arsip{},
+				&customEntity.Mina{},
 		// [GENERATOR_INSERT_MIGRATION]
 	)
 

@@ -20,6 +20,7 @@ import TestduaPage from './pages/admin/TestduaPage';
 import MainnnPage from './pages/admin/MainnnPage';
 import WisudaPage from './pages/admin/WisudaPage';
 import ArsipPage from './pages/admin/ArsipPage';
+import MinaPage from './pages/admin/MinaPage';
 // [GENERATOR_INSERT_IMPORT]
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
 										<Route path="admin/mainnn" element={<MainnnPage />} />
 										<Route path="admin/wisuda" element={<WisudaPage />} />
 										<Route path="admin/arsip" element={<ArsipPage />} />
+										<Route path="admin/mina" element={<MinaPage />} />
 					// [GENERATOR_INSERT_ROUTE]
         </Route>
       </Routes>

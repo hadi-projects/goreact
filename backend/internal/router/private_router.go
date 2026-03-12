@@ -29,6 +29,7 @@ func (r *Router) setupPrivateRoutes(
 	mainnnHandler customHandler.MainnnHandler,
 	wisudaHandler customHandler.WisudaHandler,
 		arsipHandler customHandler.ArsipHandler,
+		minaHandler customHandler.MinaHandler,
 	// [GENERATOR_INSERT_HANDLER_PARAM]
 ) {
 	// Health and Status
@@ -121,6 +122,16 @@ func (r *Router) setupPrivateRoutes(
 		arsip.GET("/:id", arsipHandler.GetByID)
 		arsip.PUT("/:id", arsipHandler.Update)
 		arsip.DELETE("/:id", arsipHandler.Delete)
+	}
+		mina := v1.Group("/mina")
+	mina.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
+	{
+		mina.POST("", minaHandler.Create)
+		mina.GET("", minaHandler.GetAll)
+		mina.GET("/export", minaHandler.Export)
+		mina.GET("/:id", minaHandler.GetByID)
+		mina.PUT("/:id", minaHandler.Update)
+		mina.DELETE("/:id", minaHandler.Delete)
 	}
 	// [GENERATOR_INSERT_GROUP]
 	auth := v1.Group("/auth")
