@@ -89,14 +89,30 @@ func LogAudit(ctx context.Context, action, module, targetID, metadata string) {
 	})
 
 	// Also log to file-based AuditLogger
-	AuditLogger.Info().
-		Str("request_id", requestID).
-		Uint("user_id", userID).
-		Str("user_email", userEmail).
+	WithCtx(ctx, AuditLogger).Info().
 		Str("action", action).
 		Str("module", module).
 		Str("target_id", targetID).
 		Msg("audit operation")
+}
+
+func WithCtx(ctx context.Context, l zerolog.Logger) *zerolog.Logger {
+	lc := l.With()
+
+	if val, ok := ctx.Value(CtxKeyRequestID).(string); ok && val != "" {
+		lc = lc.Str("request_id", val)
+	}
+
+	if val, ok := ctx.Value(CtxKeyUserID).(uint); ok && val != 0 {
+		lc = lc.Uint("user_id", val)
+	}
+
+	if val, ok := ctx.Value(CtxKeyUserEmail).(string); ok && val != "" {
+		lc = lc.Str("user_email", val)
+	}
+
+	logger := lc.Logger()
+	return &logger
 }
 
 var (
@@ -140,7 +156,6 @@ func (l *logger) Fatal() *zerolog.Event {
 // strictly speaking we should move to DI for everything.
 var (
 	SystemLogger    zerolog.Logger
-	AuthLogger      zerolog.Logger
 	DBLogger        zerolog.Logger
 	RedisLogger     zerolog.Logger
 	RateLimitLogger zerolog.Logger
@@ -153,7 +168,6 @@ func InitLogger(cfg *config.Config) {
 	}
 
 	SystemLogger = newZeroLogger(*cfg, "system.log")
-	AuthLogger = newZeroLogger(*cfg, "auth.log")
 	DBLogger = newZeroLogger(*cfg, "db.log")
 	RedisLogger = newZeroLogger(*cfg, "redis.log")
 	RateLimitLogger = newZeroLogger(*cfg, "rate_limit.log")

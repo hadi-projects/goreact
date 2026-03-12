@@ -1,12 +1,14 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/hadi-projects/go-react-starter/pkg/logger"
 	"github.com/hadi-projects/go-react-starter/pkg/response"
 )
 
@@ -43,14 +45,29 @@ func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			var userID uint
+			var userEmail string
+
 			// Cast sub to uint
 			if subFloat, ok := claims["sub"].(float64); ok {
-				c.Set("user_id", uint(subFloat))
+				userID = uint(subFloat)
+				c.Set("user_id", userID)
 			}
 			if email, ok := claims["email"].(string); ok {
-				c.Set("user_email", email)
+				userEmail = email
+				c.Set("user_email", userEmail)
 			}
 			c.Set("role", claims["role"])
+
+			// Also set in request context for logger.WithCtx compatibility
+			ctx := c.Request.Context()
+			if userID != 0 {
+				ctx = context.WithValue(ctx, logger.CtxKeyUserID, userID)
+			}
+			if userEmail != "" {
+				ctx = context.WithValue(ctx, logger.CtxKeyUserEmail, userEmail)
+			}
+			c.Request = c.Request.WithContext(ctx)
 
 			if permissions, ok := claims["permissions"].([]interface{}); ok {
 				var perms []string

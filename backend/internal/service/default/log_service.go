@@ -32,9 +32,6 @@ func (s *logService) GetLogs(query dto.LogQuery) ([]dto.LogResponse, error) {
 	if query.Type == "" {
 		query.Type = "all"
 	}
-	if query.Type == "all" || query.Type == "auth" {
-		filesToRead = append(filesToRead, "auth.log")
-	}
 	if query.Type == "all" || query.Type == "audit" {
 		filesToRead = append(filesToRead, "audit.log")
 	}

@@ -32,3 +32,7 @@ type ResetPasswordRequest struct {
 	Token    string `json:"token" binding:"required"`
 	Password string `json:"password" binding:"required,min=8"`
 }
+
+type LogoutRequest struct {
+	Reason string `json:"reason"`
+}

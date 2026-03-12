@@ -26,6 +26,15 @@ const Logs = () => {
 
     const allColumns = [
         {
+            header: 'Req ID',
+            accessor: 'request_id',
+            render: (row) => (
+                <div className="font-mono text-[10px] text-surface-on-variant truncate max-w-[70px]" title={row.request_id}>
+                    {row.request_id?.split('-')[0] || '-'}
+                </div>
+            )
+        },
+        {
             header: 'Level',
             accessor: 'level',
             render: (row) => (
@@ -37,21 +46,13 @@ const Logs = () => {
                 </span>
             )
         },
+
         {
             header: 'Action',
             accessor: 'action',
             render: (row) => (
                 <div className="truncate max-w-xs whitespace-nowrap overflow-hidden">
                     {row.action}
-                </div>
-            )
-        },
-        {
-            header: 'Email',
-            accessor: 'email',
-            render: (row) => (
-                <div className="truncate max-w-xs whitespace-nowrap overflow-hidden">
-                    {row.email}
                 </div>
             )
         },
@@ -100,7 +101,7 @@ const Logs = () => {
     ];
 
     const columns = logType === 'system'
-        ? allColumns.filter(col => ['level', 'message', 'time', 'id'].includes(col.accessor))
+        ? allColumns.filter(col => ['level', 'request_id', 'message', 'time', 'id'].includes(col.accessor))
         : allColumns;
 
     if (error) {

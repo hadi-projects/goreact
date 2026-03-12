@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	entity "github.com/hadi-projects/go-react-starter/internal/entity/default"
 	repository "github.com/hadi-projects/go-react-starter/internal/repository/default"
+	"github.com/hadi-projects/go-react-starter/pkg/logger"
 )
 
 var sensitiveKeys = map[string]bool{
@@ -61,7 +63,11 @@ func RequestLogger(logRepo repository.HttpLogRepository) gin.HandlerFunc {
 		requestID := uuid.New().String()
 		AddToTrace(ctx, "Request Started")
 
+		// Set in Gin context for potential usage in other middleware/handlers
 		ctx.Set("request_id", requestID)
+		// Set in Request context for the WithCtx helper (standard context.Context)
+		ctx.Request = ctx.Request.WithContext(context.WithValue(ctx.Request.Context(), logger.CtxKeyRequestID, requestID))
+		
 		ctx.Header("X-Request-ID", requestID)
 
 		var body []byte

@@ -22,6 +22,7 @@ type AuthService interface {
 	Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error)
 	ForgotPassword(ctx context.Context, req dto.ForgotPasswordRequest) error
 	ResetPassword(ctx context.Context, req dto.ResetPasswordRequest) error
+	Logout(ctx context.Context, req dto.LogoutRequest) error
 }
 
 type authService struct {
@@ -52,21 +53,12 @@ func (s *authService) Login(ctx context.Context, req dto.LoginRequest) (*dto.Log
 	// 1. Find user by email
 	user, err := s.userRepo.FindByEmail(req.Email)
 	if err != nil {
-		logger.AuthLogger.Warn().
-			Str("email", req.Email).
-			Str("action", "login").
-			Msg("login failed: user not found")
 		return nil, errors.New("invalid email or password")
 	}
 
 	// 2. Verify password
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
-		logger.AuthLogger.Warn().
-			Uint("user_id", user.ID).
-			Str("email", user.Email).
-			Str("action", "login").
-			Msg("login failed: invalid password")
 		return nil, errors.New("invalid email or password")
 	}
 
@@ -89,12 +81,6 @@ func (s *authService) Login(ctx context.Context, req dto.LoginRequest) (*dto.Log
 	if err != nil {
 		return nil, err
 	}
-
-	logger.AuthLogger.Info().
-		Uint("user_id", user.ID).
-		Str("email", user.Email).
-		Str("action", "login").
-		Msg("login successful")
 
 	// Audit login
 	logger.LogAudit(context.WithValue(context.WithValue(ctx, logger.CtxKeyUserID, user.ID), logger.CtxKeyUserEmail, user.Email), "LOGIN", "AUTH", fmt.Sprintf("%d", user.ID), "")
@@ -121,7 +107,6 @@ func (s *authService) ForgotPassword(ctx context.Context, req dto.ForgotPassword
 	user, err := s.userRepo.FindByEmail(req.Email)
 	if err != nil {
 		// Return nil to avoid enumerating users
-		logger.AuthLogger.Warn().Str("email", req.Email).Msg("ForgotPassword: user not found")
 		return nil
 	}
 
@@ -219,6 +204,15 @@ func (s *authService) ResetPassword(ctx context.Context, req dto.ResetPasswordRe
 
 	// Audit reset password
 	logger.LogAudit(context.WithValue(context.WithValue(ctx, logger.CtxKeyUserID, user.ID), logger.CtxKeyUserEmail, user.Email), "RESET_PASSWORD", "AUTH", fmt.Sprintf("%d", user.ID), "")
+
+	return nil
+}
+
+func (s *authService) Logout(ctx context.Context, req dto.LogoutRequest) error {
+	userID, _ := ctx.Value(logger.CtxKeyUserID).(uint)
+
+	// Audit logout
+	logger.LogAudit(ctx, "LOGOUT", "AUTH", fmt.Sprintf("%d", userID), fmt.Sprintf("reason: %s", req.Reason))
 
 	return nil
 }

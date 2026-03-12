@@ -19,3 +19,11 @@ export const resetPassword = async (data) => {
     const response = await apiClient.post('/auth/reset-password', data);
     return response.data;
 };
+
+export const logoutApi = async (reason) => {
+    try {
+        await apiClient.post('/auth/logout', { reason });
+    } catch (error) {
+        // Silent fail on logging
+    }
+};

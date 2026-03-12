@@ -31,14 +31,14 @@ func NewUserHandler(service service.UserService) UserHandler {
 func (h *userHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		logger.SystemLogger.Error().Err(err).Msg("Register failed: invalid request body")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Msg("Register failed: invalid request body")
 		response.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	res, err := h.service.Register(c.Request.Context(), req)
 	if err != nil {
-		logger.SystemLogger.Error().Err(err).Msg("Register failed: service error")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Msg("Register failed: service error")
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -49,14 +49,14 @@ func (h *userHandler) Register(c *gin.Context) {
 func (h *userHandler) Create(c *gin.Context) {
 	var req dto.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		logger.SystemLogger.Error().Err(err).Msg("Create user failed: invalid request body")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Msg("Create user failed: invalid request body")
 		response.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	res, err := h.service.CreateUser(c.Request.Context(), req)
 	if err != nil {
-		logger.SystemLogger.Error().Err(err).Msg("Create user failed: service error")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Msg("Create user failed: service error")
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -67,21 +67,21 @@ func (h *userHandler) Create(c *gin.Context) {
 func (h *userHandler) Me(c *gin.Context) {
 	val, exists := c.Get("user_id")
 	if !exists {
-		logger.SystemLogger.Error().Msg("Me failed: user_id not found in context")
+		logger.WithCtx(c, logger.SystemLogger).Error().Msg("Me failed: user_id not found in context")
 		response.Error(c, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	userID, ok := val.(uint)
 	if !ok {
-		logger.SystemLogger.Error().Msg("Me failed: invalid user_id type")
+		logger.WithCtx(c, logger.SystemLogger).Error().Msg("Me failed: invalid user_id type")
 		response.Error(c, http.StatusInternalServerError, "Invalid user ID type")
 		return
 	}
 
 	res, err := h.service.GetMe(userID)
 	if err != nil {
-		logger.SystemLogger.Error().Err(err).Uint("user_id", userID).Msg("Me failed: user not found")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Uint("user_id", userID).Msg("Me failed: user not found")
 		response.Error(c, http.StatusNotFound, "User not found")
 		return
 	}
@@ -102,7 +102,7 @@ func (h *userHandler) GetAll(c *gin.Context) {
 
 	res, err := h.service.GetAll(pagination)
 	if err != nil {
-		logger.SystemLogger.Error().Err(err).Msg("GetAll users failed")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Msg("GetAll users failed")
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -121,21 +121,21 @@ func (h *userHandler) Update(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		logger.SystemLogger.Error().Err(err).Str("id", idStr).Msg("Update user failed: invalid ID")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Str("id", idStr).Msg("Update user failed: invalid ID")
 		response.Error(c, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
 	var req dto.UpdateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		logger.SystemLogger.Error().Err(err).Msg("Update user failed: invalid request body")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Msg("Update user failed: invalid request body")
 		response.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	res, err := h.service.Update(c.Request.Context(), uint(id), req)
 	if err != nil {
-		logger.SystemLogger.Error().Err(err).Uint("id", uint(id)).Msg("Update user failed: service error")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Uint("id", uint(id)).Msg("Update user failed: service error")
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -146,13 +146,13 @@ func (h *userHandler) Delete(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		logger.SystemLogger.Error().Err(err).Str("id", idStr).Msg("Delete user failed: invalid ID")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Str("id", idStr).Msg("Delete user failed: invalid ID")
 		response.Error(c, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
 	if err := h.service.Delete(c.Request.Context(), uint(id)); err != nil {
-		logger.SystemLogger.Error().Err(err).Uint("id", uint(id)).Msg("Delete user failed: service error")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Uint("id", uint(id)).Msg("Delete user failed: service error")
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}

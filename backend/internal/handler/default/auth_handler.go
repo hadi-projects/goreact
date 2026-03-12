@@ -14,6 +14,7 @@ type AuthHandler interface {
 	Login(c *gin.Context)
 	ForgotPassword(c *gin.Context)
 	ResetPassword(c *gin.Context)
+	Logout(c *gin.Context)
 }
 
 type authHandler struct {
@@ -27,14 +28,14 @@ func NewAuthHandler(service service.AuthService) AuthHandler {
 func (h *authHandler) Login(c *gin.Context) {
 	var loginReq dto.LoginRequest
 	if err := c.ShouldBindJSON(&loginReq); err != nil {
-		logger.SystemLogger.Error().Err(err).Msg("Login failed: invalid request body")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Msg("Login failed: invalid request body")
 		response.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	res, err := h.service.Login(c.Request.Context(), loginReq)
 	if err != nil {
-		logger.SystemLogger.Error().Err(err).Msg("Login failed: service error")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Msg("Login failed: service error")
 		response.Error(c, http.StatusUnauthorized, "Invalid email or password")
 		return
 	}
@@ -50,7 +51,7 @@ func (h *authHandler) ForgotPassword(c *gin.Context) {
 	}
 
 	if err := h.service.ForgotPassword(c.Request.Context(), req); err != nil {
-		logger.SystemLogger.Error().Err(err).Msg("ForgotPassword failed")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Msg("ForgotPassword failed")
 		// Always return success to avoid leaking internal errors or user existence
 		response.Success(c, http.StatusOK, "If your email is registered, you will receive a password reset link.", nil)
 		return
@@ -67,10 +68,24 @@ func (h *authHandler) ResetPassword(c *gin.Context) {
 	}
 
 	if err := h.service.ResetPassword(c.Request.Context(), req); err != nil {
-		logger.SystemLogger.Error().Err(err).Msg("ResetPassword failed")
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Msg("ResetPassword failed")
 		response.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	response.Success(c, http.StatusOK, "Password reset successfully", nil)
+}
+
+func (h *authHandler) Logout(c *gin.Context) {
+	var req dto.LogoutRequest
+	// We use ShouldBindJSON but don't strictly require it for logout
+	_ = c.ShouldBindJSON(&req)
+
+	if err := h.service.Logout(c.Request.Context(), req); err != nil {
+		logger.WithCtx(c, logger.SystemLogger).Error().Err(err).Msg("Logout failed")
+		response.Error(c, http.StatusInternalServerError, "Logout failed")
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Logout successful", nil)
 }

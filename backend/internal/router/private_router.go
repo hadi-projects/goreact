@@ -69,6 +69,7 @@ func (r *Router) setupPrivateRoutes(
 	auth := v1.Group("/auth")
 	{
 		auth.POST("/login", authHandler.Login)
+		auth.POST("/logout", middleware.AuthMiddleware(r.config.JWT.Secret), authHandler.Logout)
 		auth.POST("/register", userHandler.Register)
 		auth.POST("/forgot-password", authHandler.ForgotPassword)
 		auth.POST("/reset-password", authHandler.ResetPassword)

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hadi-projects/go-react-starter/config"
@@ -43,7 +44,6 @@ func (s *AuthServiceTestSuite) SetupTest() {
 		},
 	}
 
-	logger.AuthLogger = zerolog.Nop()
 	logger.SystemLogger = zerolog.Nop()
 	s.service = NewAuthService(s.mockUserRepo, s.mockTokenRepo, s.mockProducer, s.mockMailer, s.cfg)
 }
@@ -72,7 +72,7 @@ func (s *AuthServiceTestSuite) TestLogin_Success() {
 
 	s.mockUserRepo.EXPECT().FindByEmail(req.Email).Return(user, nil)
 
-	res, err := s.service.Login(req)
+	res, err := s.service.Login(context.TODO(), req)
 	s.Require().NoError(err)
 	assert.NotNil(s.T(), res)
 	assert.NotEmpty(s.T(), res.AccessToken)
@@ -93,7 +93,7 @@ func (s *AuthServiceTestSuite) TestLogin_InvalidPassword() {
 
 	s.mockUserRepo.EXPECT().FindByEmail(req.Email).Return(user, nil)
 
-	res, err := s.service.Login(req)
+	res, err := s.service.Login(context.TODO(), req)
 	assert.Error(s.T(), err)
 	assert.Nil(s.T(), res)
 	assert.Equal(s.T(), "invalid email or password", err.Error())
