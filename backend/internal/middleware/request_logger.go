@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/hadi-projects/go-react-starter/config"
 	entity "github.com/hadi-projects/go-react-starter/internal/entity/default"
 	repository "github.com/hadi-projects/go-react-starter/internal/repository/default"
 	"github.com/hadi-projects/go-react-starter/pkg/logger"
@@ -52,7 +53,7 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-func RequestLogger(logRepo repository.HttpLogRepository) gin.HandlerFunc {
+func RequestLogger(cfg *config.Config, logRepo repository.HttpLogRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		start := time.Now()
 		path := ctx.Request.URL.Path
@@ -87,8 +88,13 @@ func RequestLogger(logRepo repository.HttpLogRepository) gin.HandlerFunc {
 		statusCode := ctx.Writer.Status()
 		userID, userExists := ctx.Get("user_id")
 
-		// Removed zerolog logging to SystemLogger/AuthLogger as per requirement
-		// incoming requests are now only logged to database (HttpLog)
+		// Log to zerolog (file)
+		logger.WithCtx(ctx.Request.Context(), logger.SystemLogger).Info().
+			Str("method", method).
+			Str("path", path).
+			Int("status", statusCode).
+			Int64("latency_ms", latency.Milliseconds()).
+			Msg("HTTP Request")
 
 		// Async save to database
 		go func() {

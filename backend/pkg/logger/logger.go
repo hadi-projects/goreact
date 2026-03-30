@@ -39,6 +39,7 @@ type SystemLog struct {
 
 type SystemLogRepository interface {
 	Create(ctx context.Context, log *SystemLog) error
+	DeleteOldLogs(ctx context.Context, days int) (int64, error)
 }
 
 type AuditLog struct {
@@ -53,6 +54,7 @@ type AuditLog struct {
 
 type AuditLogRepository interface {
 	Create(ctx context.Context, log *AuditLog) error
+	DeleteOldLogs(ctx context.Context, days int) (int64, error)
 }
 
 func LogAudit(ctx context.Context, action, module, targetID, metadata string) {
@@ -167,6 +169,13 @@ func InitLogger(cfg *config.Config) {
 		panic(err)
 	}
 
+	// Set global log level
+	level, err := zerolog.ParseLevel(cfg.Log.Level)
+	if err != nil {
+		level = zerolog.InfoLevel
+	}
+	zerolog.SetGlobalLevel(level)
+
 	SystemLogger = newZeroLogger(*cfg, "system.log")
 	DBLogger = newZeroLogger(*cfg, "db.log")
 	RedisLogger = newZeroLogger(*cfg, "redis.log")
@@ -184,7 +193,7 @@ func newZeroLogger(cfg config.Config, fileName string) zerolog.Logger {
 		Filename:   filepath.Join(cfg.Log.Dir, fileName),
 		MaxSize:    10,
 		MaxBackups: 3,
-		MaxAge:     28,
+		MaxAge:     cfg.Log.RetentionDays,
 		Compress:   true,
 	}
 

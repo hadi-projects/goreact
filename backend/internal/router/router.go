@@ -62,7 +62,7 @@ func (r *Router) SetupRouter() *gin.Engine {
 
 	router.Use(gin.Recovery())
 	router.Use(middleware.CORSMiddleware(r.config))
-	router.Use(middleware.RequestLogger(httpLogRepo))
+	router.Use(middleware.RequestLogger(r.config, httpLogRepo))
 	router.Use(middleware.RequestCancellation(time.Duration(r.config.Security.RequestTimeOut) * time.Second))
 	router.Use(middleware.RateLimiter(r.config.RateLimit.Rps, r.config.RateLimit.Burst))
 	router.Use(middleware.SecureHeaders())

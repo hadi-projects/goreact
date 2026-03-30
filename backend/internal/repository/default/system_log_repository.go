@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	dto "github.com/hadi-projects/go-react-starter/internal/dto/default"
 	entity "github.com/hadi-projects/go-react-starter/internal/entity/default"
@@ -12,6 +13,7 @@ import (
 type SystemLogRepository interface {
 	Create(ctx context.Context, log *logger.SystemLog) error
 	FindAll(ctx context.Context, query *dto.SystemLogQuery) ([]entity.SystemLog, int64, error)
+	DeleteOldLogs(ctx context.Context, days int) (int64, error)
 }
 
 type systemLogRepository struct {
@@ -63,4 +65,9 @@ func (r *systemLogRepository) FindAll(ctx context.Context, query *dto.SystemLogQ
 	err := db.Order("id DESC").Offset(offset).Limit(query.GetLimit()).Find(&logs).Error
 
 	return logs, total, err
+}
+
+func (r *systemLogRepository) DeleteOldLogs(ctx context.Context, days int) (int64, error) {
+	result := r.db.WithContext(ctx).Where("created_at < ?", time.Now().AddDate(0, 0, -days)).Delete(&entity.SystemLog{})
+	return result.RowsAffected, result.Error
 }

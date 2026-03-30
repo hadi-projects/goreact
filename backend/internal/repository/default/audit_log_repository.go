@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	dto "github.com/hadi-projects/go-react-starter/internal/dto/default"
 	entity "github.com/hadi-projects/go-react-starter/internal/entity/default"
@@ -12,6 +13,7 @@ import (
 type AuditLogRepository interface {
 	Create(ctx context.Context, log *logger.AuditLog) error
 	FindAll(ctx context.Context, query *dto.AuditLogQuery) ([]entity.AuditLog, int64, error)
+	DeleteOldLogs(ctx context.Context, days int) (int64, error)
 }
 
 type auditLogRepository struct {
@@ -63,4 +65,9 @@ func (r *auditLogRepository) FindAll(ctx context.Context, query *dto.AuditLogQue
 	err := db.Order("id DESC").Offset(offset).Limit(query.GetLimit()).Find(&logs).Error
 
 	return logs, total, err
+}
+
+func (r *auditLogRepository) DeleteOldLogs(ctx context.Context, days int) (int64, error) {
+	result := r.db.WithContext(ctx).Where("created_at < ?", time.Now().AddDate(0, 0, -days)).Delete(&entity.AuditLog{})
+	return result.RowsAffected, result.Error
 }

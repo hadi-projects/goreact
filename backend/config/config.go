@@ -51,6 +51,8 @@ func LoadConfig() (config Config) {
 	viper.SetDefault("DB_MAX_OPEN_CONNS", 100)
 	viper.SetDefault("DB_MAX_LIFETIME", 60) // minutes
 	viper.SetDefault("REDIS_TTL", 300)      // 5 minutes in seconds
+	viper.SetDefault("LOG_LEVEL", "info")
+	viper.SetDefault("LOG_RETENTION_DAYS", 30)
 
 	viper.AddConfigPath(".")
 	viper.SetConfigFile(".env")
@@ -91,6 +93,8 @@ func LoadConfig() (config Config) {
 		"ADMIN_EMAIL",
 		"ADMIN_PASSWORD",
 		"LOG_DIR",
+		"LOG_LEVEL",
+		"LOG_RETENTION_DAYS",
 		"MAIL_HOST",
 		"MAIL_PORT",
 		"MAIL_USERNAME",
@@ -165,7 +169,9 @@ func LoadConfig() (config Config) {
 	}
 
 	config.Log = LogConfig{
-		Dir: viper.GetString("LOG_DIR"),
+		Dir:           viper.GetString("LOG_DIR"),
+		Level:         viper.GetString("LOG_LEVEL"),
+		RetentionDays: viper.GetInt("LOG_RETENTION_DAYS"),
 	}
 
 	config.Mail = MailConfig{

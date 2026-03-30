@@ -1,5 +1,7 @@
 package config
 
 type LogConfig struct {
-	Dir string
+	Dir           string
+	Level         string
+	RetentionDays int
 }

@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"time"
+
 	dto "github.com/hadi-projects/go-react-starter/internal/dto/default"
 	"github.com/hadi-projects/go-react-starter/internal/entity/default"
 	"github.com/hadi-projects/go-react-starter/pkg/logger"
@@ -11,6 +13,7 @@ import (
 type HttpLogRepository interface {
 	Create(log *entity.HttpLog) error
 	FindAll(ctx context.Context, query *dto.HttpLogQuery) ([]entity.HttpLog, int64, error)
+	DeleteOldLogs(ctx context.Context, days int) (int64, error)
 }
 
 type httpLogRepository struct {
@@ -52,4 +55,9 @@ func (r *httpLogRepository) FindAll(ctx context.Context, query *dto.HttpLogQuery
 		Find(&logs).Error
 
 	return logs, total, err
+}
+
+func (r *httpLogRepository) DeleteOldLogs(ctx context.Context, days int) (int64, error) {
+	result := r.db.WithContext(ctx).Where("created_at < ?", time.Now().AddDate(0, 0, -days)).Delete(&entity.HttpLog{})
+	return result.RowsAffected, result.Error
 }
