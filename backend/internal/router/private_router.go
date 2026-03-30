@@ -20,18 +20,8 @@ func (r *Router) setupPrivateRoutes(
 	systemLogHandler handler.SystemLogHandler,
 	auditLogHandler handler.AuditLogHandler,
 	generatorHandler handler.GeneratorHandler,
-	testsajaHandler customHandler.TestsajaHandler,
 	produkHandler customHandler.ProdukHandler,
 	healthHandler handler.HealthHandler,
-	testduaHandler customHandler.TestduaHandler,
-	cookHandler customHandler.CookHandler,
-	adminHandler customHandler.AdminHandler,
-	mainnnHandler customHandler.MainnnHandler,
-	wisudaHandler customHandler.WisudaHandler,
-		arsipHandler customHandler.ArsipHandler,
-		minaHandler customHandler.MinaHandler,
-		blogHandler customHandler.BlogHandler,
-		newsHandler customHandler.NewsHandler,
 	// [GENERATOR_INSERT_HANDLER_PARAM]
 ) {
 	// Health and Status
@@ -46,16 +36,6 @@ func (r *Router) setupPrivateRoutes(
 	{
 		generator.POST("", middleware.PermissionGuard("create-module"), generatorHandler.Generate)
 	}
-	testsaja := v1.Group("/testsaja")
-	testsaja.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		testsaja.POST("", testsajaHandler.Create)
-		testsaja.GET("", testsajaHandler.GetAll)
-		testsaja.GET("/:id", testsajaHandler.GetByID)
-		testsaja.PUT("/:id", testsajaHandler.Update)
-		testsaja.DELETE("/:id", testsajaHandler.Delete)
-		testsaja.GET("/export", testsajaHandler.Export)
-	}
 	produk := v1.Group("/produk")
 	produk.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
 	{
@@ -65,95 +45,6 @@ func (r *Router) setupPrivateRoutes(
 		produk.PUT("/:id", produkHandler.Update)
 		produk.DELETE("/:id", produkHandler.Delete)
 		produk.GET("/export", produkHandler.Export)
-	}
-	testdua := v1.Group("/testdua")
-	testdua.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		testdua.POST("", testduaHandler.Create)
-		testdua.GET("", testduaHandler.GetAll)
-		testdua.GET("/:id", testduaHandler.GetByID)
-		testdua.PUT("/:id", testduaHandler.Update)
-		testdua.DELETE("/:id", testduaHandler.Delete)
-		testdua.GET("/export", testduaHandler.Export)
-	}
-	cook := v1.Group("/cook")
-	cook.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		cook.POST("", cookHandler.Create)
-		cook.GET("", cookHandler.GetAll)
-		cook.GET("/:id", cookHandler.GetByID)
-		cook.PUT("/:id", cookHandler.Update)
-		cook.DELETE("/:id", cookHandler.Delete)
-		cook.GET("/export", cookHandler.Export)
-	}
-	admin := v1.Group("/admin/module") // Use /admin/module to avoid conflict with /admin/*
-	admin.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		admin.POST("", adminHandler.Create)
-		admin.GET("", adminHandler.GetAll)
-		admin.GET("/:id", adminHandler.GetByID)
-		admin.PUT("/:id", adminHandler.Update)
-		admin.DELETE("/:id", adminHandler.Delete)
-		admin.GET("/export", adminHandler.Export)
-	}
-	mainnn := v1.Group("/mainnn")
-	mainnn.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		mainnn.POST("", mainnnHandler.Create)
-		mainnn.GET("", mainnnHandler.GetAll)
-		mainnn.GET("/:id", mainnnHandler.GetByID)
-		mainnn.PUT("/:id", mainnnHandler.Update)
-		mainnn.DELETE("/:id", mainnnHandler.Delete)
-	}
-		wisuda := v1.Group("/wisuda")
-	wisuda.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		wisuda.POST("", wisudaHandler.Create)
-		wisuda.GET("", wisudaHandler.GetAll)
-		wisuda.GET("/export", wisudaHandler.Export)
-		wisuda.GET("/:id", wisudaHandler.GetByID)
-		wisuda.PUT("/:id", wisudaHandler.Update)
-		wisuda.DELETE("/:id", wisudaHandler.Delete)
-	}
-		arsip := v1.Group("/arsip")
-	arsip.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		arsip.POST("", arsipHandler.Create)
-		arsip.GET("", arsipHandler.GetAll)
-		arsip.GET("/export", arsipHandler.Export)
-		arsip.GET("/:id", arsipHandler.GetByID)
-		arsip.PUT("/:id", arsipHandler.Update)
-		arsip.DELETE("/:id", arsipHandler.Delete)
-	}
-		mina := v1.Group("/mina")
-	mina.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		mina.POST("", minaHandler.Create)
-		mina.GET("", minaHandler.GetAll)
-		mina.GET("/export", minaHandler.Export)
-		mina.GET("/:id", minaHandler.GetByID)
-		mina.PUT("/:id", minaHandler.Update)
-		mina.DELETE("/:id", minaHandler.Delete)
-	}
-		blog := v1.Group("/blog")
-	blog.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		blog.POST("", blogHandler.Create)
-		blog.GET("", blogHandler.GetAll)
-		blog.GET("/export", blogHandler.Export)
-		blog.GET("/:id", blogHandler.GetByID)
-		blog.PUT("/:id", blogHandler.Update)
-		blog.DELETE("/:id", blogHandler.Delete)
-	}
-		news := v1.Group("/news")
-	news.Use(middleware.AuthMiddleware(r.config.JWT.Secret))
-	{
-		news.POST("", newsHandler.Create)
-		news.GET("", newsHandler.GetAll)
-		news.GET("/export", newsHandler.Export)
-		news.GET("/:id", newsHandler.GetByID)
-		news.PUT("/:id", newsHandler.Update)
-		news.DELETE("/:id", newsHandler.Delete)
 	}
 	// [GENERATOR_INSERT_GROUP]
 	auth := v1.Group("/auth")

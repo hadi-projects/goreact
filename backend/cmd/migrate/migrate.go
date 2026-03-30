@@ -28,16 +28,7 @@ func main() {
 		&entity.HttpLog{},
 		&entity.SystemLog{},
 		&entity.AuditLog{},
-		&customEntity.Testsaja{},
 		&customEntity.Produk{},
-		&customEntity.Testdua{},
-		&customEntity.Admin{},
-		&customEntity.Mainnn{},
-		&customEntity.Wisuda{},
-				&customEntity.Arsip{},
-				&customEntity.Mina{},
-				&customEntity.Blog{},
-				&customEntity.News{},
 		// [GENERATOR_INSERT_MIGRATION]
 	)
 

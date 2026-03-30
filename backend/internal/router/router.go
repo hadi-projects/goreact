@@ -73,17 +73,7 @@ func (r *Router) SetupRouter() *gin.Engine {
 	permissionRepo := repository.NewPermissionRepository(db)
 	roleRepo := repository.NewRoleRepository(db)
 	tokenRepo := repository.NewTokenRepository(db)
-	testsajaRepo := customRepository.NewTestsajaRepository(db)
 	produkRepo := customRepository.NewProdukRepository(db)
-	testduaRepo := customRepository.NewTestduaRepository(db)
-	cookRepo := customRepository.NewCookRepository(db)
-	adminRepo := customRepository.NewAdminRepository(db)
-	mainnnRepo := customRepository.NewMainnnRepository(db)
-	wisudaRepo := customRepository.NewWisudaRepository(db)
-		arsipRepo := customRepository.NewArsipRepository(db)
-		minaRepo := customRepository.NewMinaRepository(db)
-		blogRepo := customRepository.NewBlogRepository(db)
-		newsRepo := customRepository.NewNewsRepository(db)
 	// [GENERATOR_INSERT_REPOSITORY]
 
 	// Services
@@ -96,17 +86,7 @@ func (r *Router) SetupRouter() *gin.Engine {
 	httpLogService := service.NewHttpLogService(httpLogRepo, r.cache)
 	systemLogService := service.NewSystemLogService(systemLogRepo, r.cache)
 	auditLogService := service.NewAuditLogService(auditLogRepo, r.cache)
-	testsajaService := customService.NewTestsajaService(testsajaRepo, r.cache)
 	produkService := customService.NewProdukService(produkRepo, r.cache)
-	testduaService := customService.NewTestduaService(testduaRepo, r.cache)
-	cookService := customService.NewCookService(cookRepo, r.cache)
-	adminService := customService.NewAdminService(adminRepo, r.cache)
-	mainnnService := customService.NewMainnnService(mainnnRepo, r.cache)
-	wisudaService := customService.NewWisudaService(wisudaRepo, r.cache)
-		arsipService := customService.NewArsipService(arsipRepo, r.cache)
-		minaService := customService.NewMinaService(minaRepo, r.cache)
-		blogService := customService.NewBlogService(blogRepo, r.cache)
-		newsService := customService.NewNewsService(newsRepo, r.cache)
 	// [GENERATOR_INSERT_SERVICE]
 
 	// Handlers
@@ -121,18 +101,8 @@ func (r *Router) SetupRouter() *gin.Engine {
 	systemLogHandler := handler.NewSystemLogHandler(systemLogService)
 	auditLogHandler := handler.NewAuditLogHandler(auditLogService)
 	generatorHandler := handler.NewGeneratorHandler(".", db)
-	testsajaHandler := customHandler.NewTestsajaHandler(testsajaService)
 	produkHandler := customHandler.NewProdukHandler(produkService)
 	healthHandler := handler.NewHealthHandler(r.cache, r.kafkaProducer)
-	testduaHandler := customHandler.NewTestduaHandler(testduaService)
-	cookHandler := customHandler.NewCookHandler(cookService)
-	adminHandler := customHandler.NewAdminHandler(adminService)
-	mainnnHandler := customHandler.NewMainnnHandler(mainnnService)
-	wisudaHandler := customHandler.NewWisudaHandler(wisudaService)
-		arsipHandler := customHandler.NewArsipHandler(arsipService)
-		minaHandler := customHandler.NewMinaHandler(minaService)
-		blogHandler := customHandler.NewBlogHandler(blogService)
-		newsHandler := customHandler.NewNewsHandler(newsService)
 	// [GENERATOR_INSERT_HANDLER]
 
 	v1 := router.Group("/api/v1")
@@ -140,18 +110,8 @@ func (r *Router) SetupRouter() *gin.Engine {
 		r.setupPrivateRoutes(v1, authHandler, userHandler, permissionHandler, roleHandler, logHandler, cacheHandler, statisticsHandler, httpLogHandler, systemLogHandler, auditLogHandler,
 
 			generatorHandler,
-			testsajaHandler,
 			produkHandler,
 			healthHandler,
-			testduaHandler,
-			cookHandler,
-			adminHandler,
-			mainnnHandler,
-			wisudaHandler,
-				arsipHandler,
-				minaHandler,
-				blogHandler,
-				newsHandler,
 		// [GENERATOR_INSERT_HANDLER_PARAM]
 		)
 	}
