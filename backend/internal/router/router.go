@@ -94,7 +94,7 @@ func (r *Router) SetupRouter() *gin.Engine {
 	userHandler := handler.NewUserHandler(userService)
 	permissionHandler := handler.NewPermissionHandler(permissionService)
 	roleHandler := handler.NewRoleHandler(roleService)
-	logHandler := handler.NewLogHandler(logService)
+	logHandler := handler.NewLogHandler(logService, r.cache, permissionRepo)
 	cacheHandler := handler.NewCacheHandler(r.cache)
 	statisticsHandler := handler.NewStatisticsHandler(statisticsService)
 	httpLogHandler := handler.NewHttpLogHandler(httpLogService)
