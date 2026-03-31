@@ -155,6 +155,6 @@ Key environment variables used in `backend/.env`:
 4. Storage with one time link and user accesspermission
 5. web description untuk set title, favicon, seo
 6. reset 2fa secret key
-7. module api key
+7. module api key, (uuid, hex, private key)
 8. native event for notifications
 9. freeze user
