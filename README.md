@@ -152,7 +152,7 @@ Key environment variables used in `backend/.env`:
 1. Implement reset password OK
 2. implement remember me OK
 3. Implement 2fa by email anf HOTP
-4. Storage with one time link and user accesspermission
+4. Storage with one time link and user access permission
 5. web description untuk set title, favicon, seo
 6. reset 2fa secret key
 7. module api key, (uuid, hex, private key)

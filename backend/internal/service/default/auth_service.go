@@ -101,7 +101,7 @@ func (s *authService) Login(ctx context.Context, req dto.LoginRequest) (*dto.Log
 	var permissionsMask uint64
 	for _, p := range user.Role.Permissions {
 		if p.ID <= 64 {
-			permissionsMask |= (1 << (p.ID - 1))
+			permissionsMask |= (uint64(1) << (p.ID - 1))
 		}
 	}
 
@@ -185,7 +185,7 @@ func (s *authService) RefreshToken(ctx context.Context, req dto.RefreshTokenRequ
 	var permissionsMask uint64
 	for _, p := range rt.User.Role.Permissions {
 		if p.ID <= 64 {
-			permissionsMask |= (1 << (p.ID - 1))
+			permissionsMask |= (uint64(1) << (p.ID - 1))
 		}
 	}
 
@@ -436,7 +436,7 @@ func (s *authService) generateLoginResponse(ctx context.Context, user *entity.Us
 	var permissionsMask uint64
 	for _, p := range user.Role.Permissions {
 		if p.ID <= 64 {
-			permissionsMask |= (1 << (p.ID - 1))
+			permissionsMask |= (uint64(1) << (p.ID - 1))
 		}
 	}
 

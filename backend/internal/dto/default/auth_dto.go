@@ -26,7 +26,7 @@ type AuthUserResponse struct {
 	Email           string `json:"email"`
 	RoleID          uint   `json:"role_id"`
 	Role            string `json:"role"`
-	PermissionsMask uint64 `json:"permissions_mask"`
+	PermissionsMask uint64 `json:"permissions_mask,string"`
 	Status          string `json:"status"`
 	TwoFAEnabled    bool   `json:"two_fa_enabled"`
 }
