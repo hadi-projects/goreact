@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom';
 import Button from '../components/Button';
+import { useSettings } from '../context/SettingsContext';
 
 const Landing = () => {
+    const { app_name } = useSettings();
     return (
         <div className="min-h-screen bg-primary-500">
             {/* Navigation */}
             <nav className="container mx-auto px-6 py-6">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-white">Go Starter</h1>
+                    <h1 className="text-2xl font-bold text-white">{app_name}</h1>
                     <div className="space-x-4">
                         <Link to="/login">
                             <Button variant="outline" className="text-white border-white hover:bg-white/10">
@@ -67,7 +69,7 @@ const Landing = () => {
             {/* Footer Section */}
             <div className="container mx-auto px-6 py-12 text-center">
                 <p className="text-white/70">
-                    © 2026 Go Starter. Built with ❤️ using Go and React.
+                    © 2026 {app_name}. Built with ❤️ using Go and React.
                 </p>
             </div>
         </div>

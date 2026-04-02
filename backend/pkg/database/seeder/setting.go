@@ -9,7 +9,7 @@ import (
 func SeedSettings(db *gorm.DB) {
 	settings := []entity.Setting{
 		// Website Settings
-		{Key: "app_name", Value: "Go-React Starter", Category: "website", FieldType: "text", Label: "Application Name", Description: "The name of your application shown in the browser title and sidebar."},
+		{Key: "app_name", Value: "Go-React Starter Def", Category: "website", FieldType: "text", Label: "Application Name", Description: "The name of your application shown in the browser title and sidebar."},
 		{Key: "app_logo", Value: "", Category: "website", FieldType: "file", Label: "Logo", Description: "The logo image for your application."},
 		{Key: "app_favicon", Value: "", Category: "website", FieldType: "file", Label: "Favicon", Description: "The icon shown in the browser tab."},
 

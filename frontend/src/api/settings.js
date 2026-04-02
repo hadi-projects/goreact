@@ -5,6 +5,11 @@ export const getSettingsByCategory = async (category) => {
   return response.data;
 };
 
+export const getPublicSettings = async (category) => {
+  const response = await apiClient.get(`/public/settings/${category}`);
+  return response.data;
+};
+
 export const updateSettings = async (settings) => {
   const response = await apiClient.put('/settings', { settings });
   return response.data;

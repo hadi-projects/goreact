@@ -99,7 +99,7 @@ func (r *Router) SetupRouter() *gin.Engine {
 		storageDriver,
 		r.cache,
 		r.config.Frontend.URL,
-		r.config.Storage.MaxFileSizeMB,
+		settingService,
 	)
 	// [GENERATOR_INSERT_SERVICE]
 

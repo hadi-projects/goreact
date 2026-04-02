@@ -16,6 +16,7 @@ import {
     downloadOwnFile,
     getShareLinks,
 } from '../../api/storage';
+import { useSettings } from '../../context/SettingsContext';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -175,6 +176,7 @@ const ShareLinksPanel = ({ file, onCreateNew, onEdit }) => {
 
 const StoragePage = () => {
     const can = usePermission();
+    const { max_file_size_mb = 50 } = useSettings();
 
     // Data state
     const [data, setData] = useState([]);
@@ -250,6 +252,14 @@ const StoragePage = () => {
             toast.error('Please select a file first.');
             return;
         }
+
+        // Client-side size validation
+        const maxBytes = max_file_size_mb * 1024 * 1024;
+        if (pendingFile.size > maxBytes) {
+            toast.error(`File is too large. Max allowed is ${max_file_size_mb}MB.`);
+            return;
+        }
+
         setUploading(true);
         setUploadProgress(0);
         try {
@@ -620,6 +630,9 @@ const StoragePage = () => {
                         uploading={uploading}
                         progress={uploadProgress}
                     />
+                    <p className="text-[10px] text-surface-on-variant text-center opacity-70">
+                        Maximum file size allowed: <span className="font-bold text-primary">{max_file_size_mb} MB</span>
+                    </p>
 
                     {pendingFile && !uploading && (
                         <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-primary/5 border border-primary/20">

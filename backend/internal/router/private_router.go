@@ -60,6 +60,7 @@ func (r *Router) setupPrivateRoutes(
 	{
 		publicGroup.GET("/share/:token", storageHandler.PublicFileInfo)
 		publicGroup.GET("/share/:token/download", storageHandler.PublicDownload)
+		publicGroup.GET("/settings/:category", settingHandler.GetPublicByCategory)
 	}
 
 	produk := v1.Group("/produk")

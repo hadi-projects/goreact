@@ -29,6 +29,10 @@ const logApi = {
             responseType: 'blob',
         });
     },
+    getAuditLogs: async (params) => {
+        const response = await client.get('/logs/audit', { params });
+        return response.data;
+    },
 };
 
 export default logApi;

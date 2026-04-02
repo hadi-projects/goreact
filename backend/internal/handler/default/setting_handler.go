@@ -11,6 +11,7 @@ import (
 
 type SettingHandler interface {
 	GetByCategory(c *gin.Context)
+	GetPublicByCategory(c *gin.Context)
 	BulkUpdate(c *gin.Context)
 }
 
@@ -30,6 +31,23 @@ func (h *settingHandler) GetByCategory(c *gin.Context) {
 		return
 	}
 	response.Success(c, http.StatusOK, "Settings retrieved", res)
+}
+
+func (h *settingHandler) GetPublicByCategory(c *gin.Context) {
+	category := c.Param("category")
+	
+	// Security: Only allow specific categories publicly
+	if category != "website" && category != "advance" && category != "storage" {
+		response.Error(c, http.StatusForbidden, "Public access to this category is not allowed")
+		return
+	}
+
+	res, err := h.service.GetSettings(c.Request.Context(), category)
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(c, http.StatusOK, "Public settings retrieved", res)
 }
 
 func (h *settingHandler) BulkUpdate(c *gin.Context) {

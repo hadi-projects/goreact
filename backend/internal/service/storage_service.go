@@ -10,6 +10,7 @@ import (
 	"math"
 	"mime/multipart"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +23,7 @@ import (
 	"github.com/hadi-projects/go-react-starter/pkg/storage"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	settingService "github.com/hadi-projects/go-react-starter/internal/service/default"
 )
 
 // ErrForbidden is returned when a share link access is denied.
@@ -63,9 +65,9 @@ type storageService struct {
 	fileRepo      repository.StorageFileRepository
 	shareLinkRepo repository.ShareLinkRepository
 	driver        storage.Driver
-	cache         cache.CacheService
-	frontendURL   string
-	maxFileSizeMB int64
+	cache          cache.CacheService
+	frontendURL    string
+	settingService settingService.SettingService
 }
 
 func NewStorageService(
@@ -74,18 +76,15 @@ func NewStorageService(
 	driver storage.Driver,
 	cacheService cache.CacheService,
 	frontendURL string,
-	maxFileSizeMB int64,
+	settingSvc settingService.SettingService,
 ) StorageService {
-	if maxFileSizeMB <= 0 {
-		maxFileSizeMB = defaultMaxFileSizeMB
-	}
 	return &storageService{
-		fileRepo:      fileRepo,
-		shareLinkRepo: shareLinkRepo,
-		driver:        driver,
-		cache:         cacheService,
-		frontendURL:   frontendURL,
-		maxFileSizeMB: maxFileSizeMB,
+		fileRepo:       fileRepo,
+		shareLinkRepo:  shareLinkRepo,
+		driver:         driver,
+		cache:          cacheService,
+		frontendURL:    frontendURL,
+		settingService: settingSvc,
 	}
 }
 
@@ -205,7 +204,12 @@ func (s *storageService) consumeLink(ctx context.Context, link *entity.ShareLink
 
 func (s *storageService) Upload(ctx context.Context, userID uint, fileHeader *multipart.FileHeader, description string) (*dto.StorageFileResponse, error) {
 	// Size validation
-	maxBytes := s.maxFileSizeMB * 1024 * 1024
+	maxSizeValue := s.settingService.GetConfigValue(ctx, "storage_max_file_size_mb")
+	maxMB, _ := strconv.ParseInt(maxSizeValue, 10, 64)
+	if maxMB <= 0 {
+		maxMB = defaultMaxFileSizeMB
+	}
+	maxBytes := maxMB * 1024 * 1024
 	if fileHeader.Size > maxBytes {
 		return nil, fmt.Errorf("file size %s exceeds maximum allowed %s",
 			formatSize(fileHeader.Size), formatSize(maxBytes))
