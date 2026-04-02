@@ -228,6 +228,52 @@ const SharePage = () => {
         }
     };
 
+    const getPreviewUrl = () => {
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+        let url = `${API_BASE_URL}/public/share/${token}/download`;
+        if (passwordVerified && password) {
+            url += `?password=${encodeURIComponent(password)}`;
+        }
+        return url;
+    };
+
+    const renderPreview = () => {
+        if (!fileInfo) return null;
+        const url = getPreviewUrl();
+        const mime = fileInfo.mime_type;
+
+        if (mime.startsWith('image/')) {
+            return (
+                <div className="flex justify-center bg-surface-variant/20 rounded-xl overflow-hidden mb-4">
+                    <img src={url} alt={fileInfo.original_name} className="max-w-full max-h-64 object-contain" />
+                </div>
+            );
+        }
+        if (mime.startsWith('video/')) {
+            return (
+                <div className="flex justify-center bg-black rounded-xl overflow-hidden mb-4">
+                    <video src={url} controls className="max-w-full max-h-64 object-contain w-full" />
+                </div>
+            );
+        }
+        if (mime === 'application/pdf') {
+            return (
+                <div className="flex justify-center bg-surface-variant/20 rounded-xl overflow-hidden mb-4">
+                    <iframe src={url} title={fileInfo.original_name} className="w-full h-64 border-none" />
+                </div>
+            );
+        }
+        // Fallback
+        return (
+            <div className="flex justify-center items-center bg-surface-variant/10 border border-outline-variant/30 rounded-xl mb-4 h-40">
+                <div className="text-surface-on-variant flex flex-col items-center gap-2">
+                    <MimeIcon mimeType={mime} size="lg" />
+                    <span className="text-xs font-medium opacity-60">Preview not supported</span>
+                </div>
+            </div>
+        );
+    };
+
     // ── Render helpers ────────────────────────────────────────────────────────
 
     const renderError = () => {
@@ -344,6 +390,8 @@ const SharePage = () => {
 
     const renderFileInfo = () => (
         <div className="space-y-5">
+            {renderPreview()}
+            
             {/* File card */}
             <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-container border border-outline-variant/30">
                 <div className="p-3 rounded-xl bg-primary/10 text-primary flex-shrink-0">
